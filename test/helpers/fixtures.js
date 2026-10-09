@@ -155,3 +155,36 @@ export const MDNS_RESULTS = [
     txt: ['c#=1', 'ff=1', 'id=AA:BB:CC:DD:EE:01', 'md=Eve Energy', 'sf=1', 'ci=7'],
   },
 ];
+
+// A two-button remote with a battery (Eve Button style): the buttons fire the
+// `button_pressed` scene trigger, the battery makes it a Gladys device.
+const button = (iid, index, name) => ({
+  iid,
+  type: long('89'),
+  characteristics: [
+    { iid: iid + 1, type: long('73'), perms: ['pr', 'ev'], format: 'uint8', value: null },
+    { iid: iid + 2, type: 'CB', perms: ['pr'], format: 'uint8', value: index },
+    { iid: iid + 3, type: '23', perms: ['pr'], format: 'string', value: name },
+  ],
+});
+
+export const BUTTON_DATABASE = {
+  accessories: [
+    {
+      aid: 1,
+      services: [
+        info('Hall remote'),
+        button(10, 1, 'Up'),
+        button(20, 2, 'Down'),
+        {
+          iid: 30,
+          type: '96',
+          characteristics: [
+            { iid: 31, type: '68', perms: ['pr', 'ev'], format: 'uint8', value: 80 },
+            { iid: 32, type: '79', perms: ['pr', 'ev'], format: 'uint8', value: 0 },
+          ],
+        },
+      ],
+    },
+  ],
+};

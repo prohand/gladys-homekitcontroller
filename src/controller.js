@@ -29,9 +29,14 @@ import {
   parseMdnsResults,
   platformIdFromDeviceId,
 } from './hap/discovery.js';
-import { mapAccessory } from './mapping/index.js';
+import { BUTTON_PRESS, mapAccessory } from './mapping/index.js';
+import { accessoriesWidget } from './widgets.js';
 
 const DEVICE_TYPE = 'accessory';
+
+// Keys declared in the manifest (`scene_triggers`, `widgets`): never rename.
+export const SCENE_TRIGGERS = { BUTTON_PRESSED: 'button_pressed', STATUS: 'accessory_status' };
+export const WIDGETS = { ACCESSORIES: 'accessories' };
 
 // Delays between reconnection attempts of an unreachable accessory.
 export const RETRY_DELAYS_MS = [10_000, 30_000, 60_000, 120_000, 300_000];
@@ -142,6 +147,8 @@ export class HomeKitController {
         values: new Map(), // "aid.iid" -> last HAP value
         readable: [], // ["aid.iid"] characteristics read on refresh
         subscribable: [], // ["aid.iid"] characteristics with events
+        buttons: new Map(), // "aid.iid" -> { aid, button } (scene trigger only)
+        reportedOffline: false, // an "offline" scene event was fired
       });
     }
     return this.states.get(key);
@@ -217,6 +224,11 @@ export class HomeKitController {
             `${state.devices.size} device(s), ${state.subscribable.length} event subscription(s)`,
         );
       }
+      // Only a comeback after a reported loss is an event, not the startup.
+      if (state.reportedOffline) {
+        state.reportedOffline = false;
+        await this.publishStatusEvent(state, 'online');
+      }
       await this.publishAll(state);
       if (structureChanged) {
         await this.onDevicesChanged();
@@ -250,6 +262,10 @@ export class HomeKitController {
     const wasOnline = state.status === 'online';
     state.status = 'offline';
     state.failures += 1;
+    if (wasOnline) {
+      state.reportedOffline = true;
+      this.publishStatusEvent(state, 'offline').catch(() => {});
+    }
     state.lastError = err?.message ?? String(err);
     const delay = RETRY_DELAYS_MS[Math.min(state.failures - 1, RETRY_DELAYS_MS.length - 1)];
     const log = wasOnline || state.failures === 1 ? 'warn' : 'debug';
@@ -293,6 +309,7 @@ export class HomeKitController {
     state.devices = new Map();
     state.readable = [];
     state.subscribable = [];
+    state.buttons = new Map();
     const accessories = database?.accessories ?? [];
     for (const accessory of accessories) {
       const aid = Number(accessory.aid);
@@ -303,7 +320,14 @@ export class HomeKitController {
           }
         }
       }
-      const { info, features } = mapAccessory(accessory);
+      const { info, features, buttons } = mapAccessory(accessory);
+      for (const button of buttons) {
+        const key = charKey(aid, button.iid);
+        state.buttons.set(key, { aid, button });
+        if (!state.subscribable.includes(key)) {
+          state.subscribable.push(key);
+        }
+      }
       if (features.length === 0) {
         continue;
       }
@@ -374,6 +398,11 @@ export class HomeKitController {
       }
       const aid = Number(char.aid);
       const iid = Number(char.iid);
+      const button = state.buttons.get(charKey(aid, iid));
+      if (button) {
+        await this.publishButtonEvent(state, button, char.value);
+        continue;
+      }
       state.values.set(charKey(aid, iid), char.value);
       if (!touched.has(aid)) {
         touched.set(aid, new Set());
@@ -831,6 +860,72 @@ export class HomeKitController {
     };
   }
 
+  // --- Scene triggers ----------------------------------------------------------
+
+  /** A button of an accessory was pressed: fire the `button_pressed` trigger. */
+  async publishButtonEvent(state, { aid, button }, value) {
+    const press = BUTTON_PRESS[Number(value)];
+    // Reads of a ProgrammableSwitchEvent return null: only events count.
+    if (value === null || value === undefined || !press) {
+      return;
+    }
+    const device = state.devices.get(aid);
+    const accessory = device?.name ?? this.store.get(state.id)?.name ?? state.id;
+    await this.publishSceneEvent(SCENE_TRIGGERS.BUTTON_PRESSED, {
+      device: device?.externalId ?? null,
+      press,
+      button_index: button.index,
+      accessory,
+      button: button.name ?? String(button.index),
+      doorbell: button.doorbell,
+    });
+  }
+
+  /** An accessory went offline or came back: one event per Gladys device. */
+  async publishStatusEvent(state, status) {
+    const devices = [...state.devices.values()];
+    const targets =
+      devices.length > 0
+        ? devices.map((d) => ({ device: d.externalId, accessory: d.name }))
+        : [{ device: null, accessory: this.store.get(state.id)?.name ?? state.id }];
+    for (const target of targets) {
+      await this.publishSceneEvent(SCENE_TRIGGERS.STATUS, { ...target, status });
+    }
+  }
+
+  async publishSceneEvent(key, data) {
+    if (!this.gladys.connected) {
+      return;
+    }
+    try {
+      await this.gladys.publishSceneEvent(key, data);
+    } catch (err) {
+      this.logger.warn(`Scene event ${key} not delivered to Gladys: ${err.message}`);
+    }
+  }
+
+  // --- Dashboard widget ------------------------------------------------------
+
+  /** Content of the `accessories` dashboard widget. */
+  buildAccessoriesWidget() {
+    const accessories = [...this.states.values()].map((state) => ({
+      name: this.store.get(state.id)?.name ?? state.id,
+      online: state.status === 'online',
+    }));
+    return accessoriesWidget(accessories);
+  }
+
+  /** Reconnect every unreachable accessory now (widget button). */
+  async reconnectOffline() {
+    const offline = [...this.states.values()].filter((state) => state.status !== 'online');
+    await Promise.allSettled(offline.map((state) => this.connect(state.id)));
+    const still = offline.filter((state) => state.status !== 'online').length;
+    return {
+      en: `${offline.length - still}/${offline.length} accessory(ies) reconnected`,
+      fr: `${offline.length - still}/${offline.length} accessoire(s) reconnecté(s)`,
+    };
+  }
+
   // --- Status ----------------------------------------------------------------
 
   async reportConnectionStatus() {
@@ -859,6 +954,12 @@ export class HomeKitController {
     } catch (err) {
       this.lastConnectionStatus = null;
       this.logger.debug(`setConnectionStatus failed: ${err.message}`);
+    }
+    // The widget shows the same online / offline list: ask for a re-pull.
+    try {
+      this.gladys.requestWidgetRefresh(WIDGETS.ACCESSORIES);
+    } catch (err) {
+      this.logger.debug(`requestWidgetRefresh failed: ${err.message}`);
     }
   }
 }

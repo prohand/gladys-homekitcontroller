@@ -519,11 +519,42 @@ export function accessoryInfo(accessory) {
   };
 }
 
+// HAP ProgrammableSwitchEvent values -> press names of the scene trigger.
+export const BUTTON_PRESS = { 0: 'single', 1: 'double', 2: 'long' };
+
+/**
+ * List the buttons of an accessory (stateless programmable switches and
+ * doorbells). A press is an event, not a state: it fires the `button_pressed`
+ * scene trigger instead of a Gladys feature.
+ * @returns {Array<{ iid: number, index: number, name: string|null, doorbell: boolean }>}
+ */
+export function mapButtons(accessory) {
+  const buttons = [];
+  for (const service of accessory.services ?? []) {
+    const type = shortType(service.type);
+    if (type !== SERVICE.STATELESS_PROGRAMMABLE_SWITCH && type !== SERVICE.DOORBELL) {
+      continue;
+    }
+    const event = findChar(service, CHAR.PROGRAMMABLE_SWITCH_EVENT);
+    if (!event || !supportsEvents(event)) {
+      continue;
+    }
+    const labelIndex = toNumber(findChar(service, CHAR.SERVICE_LABEL_INDEX)?.value);
+    buttons.push({
+      iid: Number(event.iid),
+      index: labelIndex ?? buttons.length + 1,
+      name: serviceName(service),
+      doorbell: type === SERVICE.DOORBELL,
+    });
+  }
+  return buttons;
+}
+
 /**
  * Map ONE accessory (entry of the `/accessories` database) to Gladys feature
  * descriptors. Unsupported services are ignored; an accessory without any
  * supported service returns an empty list (a bridge's own accessory, a
- * camera...).
+ * camera...). Its buttons are listed apart (see mapButtons).
  */
 export function mapAccessory(accessory) {
   const info = accessoryInfo(accessory);
@@ -549,5 +580,5 @@ export function mapAccessory(accessory) {
     };
     features.push(...SERVICE_MAPPERS[type](service, label));
   }
-  return { info, features };
+  return { info, features, buttons: mapButtons(accessory) };
 }

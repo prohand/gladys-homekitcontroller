@@ -14,6 +14,7 @@ locally, **without an iPhone, Apple TV or HomePod**, and without any cloud.
 - The accessory must be on the **same local network** as Gladys.
 - Only **IP** accessories (Wi-Fi, Ethernet) are supported. Bluetooth and
   Thread accessories are not.
+- **Gladys 5.1.0 or later** is required.
 
 ## Pair an accessory
 
@@ -46,8 +47,10 @@ A HomeKit **bridge** gives one Gladys device per bridged accessory.
 |                               | PM2.5 / PM10 particles                       |
 | Battery                       | Level, low battery                           |
 
-Other services (cameras, televisions, programmable buttons…) are ignored
-for now.
+**Programmable buttons** and **doorbells** are not devices: their presses
+trigger scenes (see below).
+
+Other services (cameras, televisions…) are ignored for now.
 
 ## Settings
 
@@ -66,6 +69,34 @@ for now.
 - **Unpair an accessory**: removes the pairing from the accessory and from
   Gladys. For a bridge, all its devices are affected. Then delete the devices
   in Gladys.
+
+## Scenes
+
+Triggers ("When…"):
+
+- **HomeKit button pressed**: a button or a doorbell was pressed. Optional
+  filters: the device, the press type (single, double, long) and the button
+  number (for a remote with several buttons). Variables: accessory, button,
+  button number, press, doorbell.
+- **HomeKit accessory offline / back**: an accessory became unreachable, or
+  came back. Optional filters: the device and the status. For a bridge, each
+  bridged device sends its own event.
+
+To pick a button in the "Device" filter, the accessory must have created a
+device in Gladys (for example through its battery). Otherwise, leave the
+filter empty.
+
+Actions ("Then…"):
+
+- **Identify a HomeKit device**: the accessory signals itself.
+- **Re-read a HomeKit device**: reads all its values right away (handy
+  before a condition).
+
+## Dashboard widget
+
+The **HomeKit accessories** widget shows how many accessories are online
+and offline, the list of accessories (unreachable ones first) and, when one
+is offline, a **Reconnect** button.
 
 ## Troubleshooting
 

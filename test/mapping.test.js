@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mapAccessory, toHapValue, COVER_STATE } from '../src/mapping/index.js';
+import { mapAccessory, mapButtons, toHapValue, COVER_STATE } from '../src/mapping/index.js';
 import { hsToRgbInt, rgbIntToHs } from '../src/mapping/color.js';
 import { shortType } from '../src/hap/uuid.js';
-import { BRIDGE_DATABASE } from './helpers/fixtures.js';
+import { BRIDGE_DATABASE, BUTTON_DATABASE } from './helpers/fixtures.js';
 
 const [bridge, bulb, sensor, blind] = BRIDGE_DATABASE.accessories;
 
@@ -168,4 +168,32 @@ test('color conversions round-trip on primary colors', () => {
   assert.deepEqual(rgbIntToHs(0xff0000), { hue: 0, saturation: 100 });
   assert.deepEqual(rgbIntToHs(0x0000ff), { hue: 240, saturation: 100 });
   assert.deepEqual(rgbIntToHs(0xffffff), { hue: 0, saturation: 0 });
+});
+
+test('programmable switches are listed as buttons, not features', () => {
+  const [remote] = BUTTON_DATABASE.accessories;
+  assert.deepEqual(mapButtons(remote), [
+    { iid: 11, index: 1, name: 'Up', doorbell: false },
+    { iid: 21, index: 2, name: 'Down', doorbell: false },
+  ]);
+  const { features, buttons } = mapAccessory(remote);
+  assert.equal(buttons.length, 2);
+  assert.deepEqual(
+    features.map((f) => f.category),
+    ['battery', 'battery-low'],
+  );
+});
+
+test('a doorbell is a button too', () => {
+  const doorbell = {
+    aid: 1,
+    services: [
+      {
+        iid: 5,
+        type: '121',
+        characteristics: [{ iid: 6, type: '73', perms: ['pr', 'ev'], format: 'uint8' }],
+      },
+    ],
+  };
+  assert.deepEqual(mapButtons(doorbell), [{ iid: 6, index: 1, name: null, doorbell: true }]);
 });

@@ -8,7 +8,7 @@
   },
   "version": "1.0.1",
   "docker_image": "ghcr.io/prohand/gladys-homekitcontroller:1.0.1",
-  "gladys_version": ">=4.86.0",
+  "gladys_version": ">=5.1.0",
   "cover_image": "https://raw.githubusercontent.com/prohand/gladys-homekitcontroller/main/cover.png",
   "categories": ["protocols", "lighting", "climate"],
   "network_discovery": [
@@ -160,6 +160,263 @@
           "required": true
         }
       ]
+    }
+  ],
+  "scene_triggers": [
+    {
+      "key": "button_pressed",
+      "label": {
+        "en": "HomeKit button pressed",
+        "fr": "Bouton HomeKit appuyé"
+      },
+      "description": {
+        "en": "A HomeKit button or doorbell was pressed.",
+        "fr": "Un bouton ou une sonnette HomeKit a été appuyé."
+      },
+      "fields": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Device",
+            "fr": "Appareil"
+          },
+          "description": {
+            "en": "Leave empty for any button.",
+            "fr": "Laisser vide pour n'importe quel bouton."
+          },
+          "required": false
+        },
+        {
+          "key": "press",
+          "type": "multi_select",
+          "label": {
+            "en": "Press",
+            "fr": "Appui"
+          },
+          "description": {
+            "en": "Leave empty for any press.",
+            "fr": "Laisser vide pour n'importe quel appui."
+          },
+          "options": [
+            {
+              "value": "single",
+              "label": {
+                "en": "Single press",
+                "fr": "Appui simple"
+              }
+            },
+            {
+              "value": "double",
+              "label": {
+                "en": "Double press",
+                "fr": "Double appui"
+              }
+            },
+            {
+              "value": "long",
+              "label": {
+                "en": "Long press",
+                "fr": "Appui long"
+              }
+            }
+          ],
+          "required": false
+        },
+        {
+          "key": "button_index",
+          "type": "number",
+          "label": {
+            "en": "Button number",
+            "fr": "Numéro du bouton"
+          },
+          "description": {
+            "en": "For an accessory with several buttons. Leave empty for any.",
+            "fr": "Pour un accessoire à plusieurs boutons. Laisser vide pour tous."
+          },
+          "min": 1,
+          "max": 99,
+          "required": false
+        }
+      ],
+      "variables": [
+        {
+          "key": "accessory",
+          "type": "string",
+          "label": {
+            "en": "Accessory",
+            "fr": "Accessoire"
+          }
+        },
+        {
+          "key": "button",
+          "type": "string",
+          "label": {
+            "en": "Button",
+            "fr": "Bouton"
+          }
+        },
+        {
+          "key": "button_index",
+          "type": "number",
+          "label": {
+            "en": "Button number",
+            "fr": "Numéro du bouton"
+          }
+        },
+        {
+          "key": "press",
+          "type": "string",
+          "label": {
+            "en": "Press (single, double, long)",
+            "fr": "Appui (single, double, long)"
+          }
+        },
+        {
+          "key": "doorbell",
+          "type": "boolean",
+          "label": {
+            "en": "Doorbell",
+            "fr": "Sonnette"
+          }
+        }
+      ]
+    },
+    {
+      "key": "accessory_status",
+      "label": {
+        "en": "HomeKit accessory offline / back",
+        "fr": "Accessoire HomeKit perdu / revenu"
+      },
+      "description": {
+        "en": "A HomeKit accessory became unreachable or came back.",
+        "fr": "Un accessoire HomeKit est devenu injoignable ou est revenu."
+      },
+      "fields": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Device",
+            "fr": "Appareil"
+          },
+          "description": {
+            "en": "Leave empty for any accessory.",
+            "fr": "Laisser vide pour n'importe quel accessoire."
+          },
+          "required": false
+        },
+        {
+          "key": "status",
+          "type": "select",
+          "label": {
+            "en": "Status",
+            "fr": "État"
+          },
+          "options": [
+            {
+              "value": "offline",
+              "label": {
+                "en": "Offline",
+                "fr": "Hors ligne"
+              }
+            },
+            {
+              "value": "online",
+              "label": {
+                "en": "Back online",
+                "fr": "De retour"
+              }
+            }
+          ],
+          "required": false
+        }
+      ],
+      "variables": [
+        {
+          "key": "accessory",
+          "type": "string",
+          "label": {
+            "en": "Accessory",
+            "fr": "Accessoire"
+          }
+        },
+        {
+          "key": "status",
+          "type": "string",
+          "label": {
+            "en": "Status (offline, online)",
+            "fr": "État (offline, online)"
+          }
+        }
+      ]
+    }
+  ],
+  "scene_actions": [
+    {
+      "key": "identify",
+      "label": {
+        "en": "Identify a HomeKit device",
+        "fr": "Identifier un appareil HomeKit"
+      },
+      "description": {
+        "en": "The accessory signals itself (blinks, beeps…).",
+        "fr": "L'accessoire se signale (clignote, émet un son…)."
+      },
+      "timeout_seconds": 20,
+      "fields": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Device",
+            "fr": "Appareil"
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "key": "refresh",
+      "label": {
+        "en": "Re-read a HomeKit device",
+        "fr": "Relire un appareil HomeKit"
+      },
+      "description": {
+        "en": "Read every value of the accessory now.",
+        "fr": "Relit tout de suite toutes les valeurs de l'accessoire."
+      },
+      "timeout_seconds": 30,
+      "fields": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Device",
+            "fr": "Appareil"
+          },
+          "required": true
+        }
+      ]
+    }
+  ],
+  "widgets": [
+    {
+      "key": "accessories",
+      "label": {
+        "en": "HomeKit accessories",
+        "fr": "Accessoires HomeKit"
+      },
+      "description": {
+        "en": "Online / offline paired accessories, with a reconnect button.",
+        "fr": "Accessoires appairés en ligne / hors ligne, avec un bouton pour reconnecter."
+      },
+      "icon": "home",
+      "action_timeout_seconds": 45
     }
   ]
 }
