@@ -1,36 +1,26 @@
-# -----------------------------------------------------------------------------
-# Dependabot: weekly pull requests to keep the CI and the base image current.
-#
-#   - github-actions: the actions used by .github/workflows/*.yml
-#   - docker: the base image of the Dockerfile. It is pinned by digest
-#     (node:24-alpine@sha256:...), so Dependabot proposes every rebuild of
-#     Node 24 Alpine (security fixes of Node and Alpine). Major Node versions
-#     are ignored: move to the next LTS by hand (and update the CI to match).
-#
-# Each pull request runs the CI (lint, tests) and the manifest validation.
-# -----------------------------------------------------------------------------
+# Weekly update PRs for the npm dependencies (the Gladys SDK first of all) and
+# monthly ones for the GitHub Actions and the Docker base image. Development tools are grouped in one PR.
 version: 2
 updates:
-  - package-ecosystem: github-actions
+  - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
-      day: monday
     groups:
-      github-actions:
-        patterns:
-          - '*'
-    commit-message:
-      prefix: ci
+      dev-dependencies:
+        dependency-type: development
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
 
   - package-ecosystem: docker
     directory: /
     schedule:
-      interval: weekly
-      day: monday
+      interval: monthly
+    # Node 26 only becomes LTS on 2026-10-28: stay on the current major until then,
+    # and drop this rule once it is LTS.
     ignore:
       - dependency-name: node
-        update-types:
-          - version-update:semver-major
-    commit-message:
-      prefix: build
+        update-types: ['version-update:semver-major']

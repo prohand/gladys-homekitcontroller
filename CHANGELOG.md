@@ -26,7 +26,11 @@ la section de la nouvelle version et les publie dans la Release GitHub.
   accessoire injoignable.
 - Actions : rechercher, appairer, identifier, désappairer.
 - Documentation utilisateur en français et en anglais.
-- Vérification automatique du manifest sur chaque pull request, avec le
-  validateur du store Gladys.
-- Dependabot pour les actions GitHub et l'image Docker.
+- CI identique à `gladys-forecastsolar` : Prettier, ESLint et tests sous
+  Node 22 et 24, build de l'image Docker et contrôles du store Gladys sur
+  chaque pull request.
+- Dependabot : dépendances npm (chaque semaine), actions GitHub et image
+  Docker (chaque mois).
 - Une Release GitHub par version, avec les notes de ce changelog.
+
+[Unreleased]: https://github.com/prohand/gladys-homekitcontroller/commits/main

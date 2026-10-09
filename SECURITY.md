@@ -44,11 +44,11 @@ firmware des accessoires HomeKit.
   `/data/pairings.json`, en droits `600`, dans le volume privé de
   l'intégration. Le code de configuration n'est ni stocké ni journalisé.
 - **Conteneur** : utilisateur non root, système de fichiers en lecture seule
-  (sauf `/data`), image de base épinglée par digest.
+  (sauf `/data`).
 - **Communications HomeKit** chiffrées de bout en bout par le protocole HAP
   (SRP, Ed25519, ChaCha20-Poly1305).
-- **Dépendances** : Dependabot met à jour les actions GitHub et l'image de
-  base chaque semaine.
+- **Dépendances** : Dependabot propose les mises à jour des dépendances npm
+  chaque semaine, des actions GitHub et de l'image de base chaque mois.
 - Les alertes `npm audit` actuelles viennent de la partie Bluetooth de
   `hap-controller` (`noble` et ses outils d'installation) : ce code n'est
   jamais chargé (import direct du transport IP) et ses scripts
