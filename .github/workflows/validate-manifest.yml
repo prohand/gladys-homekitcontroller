@@ -1,0 +1,52 @@
+# -----------------------------------------------------------------------------
+# Manifest validation: the exact admission checks of the Gladys store.
+#
+# Runs the store's own validator (GladysAssistant/integration-store) on every
+# pull request, so a manifest the store would reject is caught BEFORE the
+# release: JSON schema, mandatory docs (docs/en.md + docs/fr.md), cover image
+# (format, size, dimensions), Docker image publicly pullable, code rules.
+#
+# The validator is taken from the store's default branch on purpose: it is
+# the version the hourly indexer runs, so the rules never drift.
+#
+# Note: the Docker image check needs the image named in the manifest to be
+# published and PUBLIC on ghcr.io — it fails until the first release.
+# -----------------------------------------------------------------------------
+name: Validate manifest
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    name: Gladys store validation
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24 # required by the store validator
+
+      - name: Run the Gladys store validator
+        run: |
+          set -o pipefail
+          {
+            echo '## Gladys store validation'
+            echo ''
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          status=0
+          npx --yes github:GladysAssistant/integration-store . 2>&1 | tee validation.log || status=$?
+          cat validation.log >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"

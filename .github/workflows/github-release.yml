@@ -1,0 +1,64 @@
+# -----------------------------------------------------------------------------
+# Publish the GitHub Release of a version, its notes taken from CHANGELOG.md.
+#
+# Triggers:
+#   - called by the Release workflow (workflow_call) once the image is built;
+#   - a Git version tag (e.g. `v1.2.0`) pushed by hand. Tags pushed by the
+#     Release workflow do not trigger it (default GITHUB_TOKEN), so a release
+#     is never published twice.
+#
+# Idempotent: re-running it updates the notes of an existing release.
+# -----------------------------------------------------------------------------
+name: GitHub Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Tag to release, e.g. v1.2.0'
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the release
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - name: Checkout the tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Release notes from CHANGELOG.md
+        run: |
+          set -euo pipefail
+          version="${TAG#v}"
+          if ! node scripts/changelog.js notes "$version" > notes.md; then
+            echo "::warning::CHANGELOG.md has no section for ${version}"
+            echo "Voir les commits de cette version." > notes.md
+          fi
+          image="ghcr.io/${GITHUB_REPOSITORY,,}:${version}"
+          printf '\n---\n\nImage Docker : `%s` (linux/amd64, linux/arm64)\n' "$image" >> notes.md
+          cat notes.md
+
+      - name: Create or update the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --title "$TAG" --notes-file notes.md
+          else
+            gh release create "$TAG" --title "$TAG" --notes-file notes.md --verify-tag
+          fi
