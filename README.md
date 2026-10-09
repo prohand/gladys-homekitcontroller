@@ -53,7 +53,6 @@ la radio), pas de caméras ni de télévisions pour l'instant.
 │  └─ mapping/
 │     ├─ index.js                    # services HomeKit -> fonctionnalités Gladys
 │     └─ color.js                    # conversions teinte/saturation <-> RGB
-├─ scripts/changelog.js              # CHANGELOG -> notes de Release (workflows)
 ├─ test/                             # tests unitaires (node --test)
 ├─ docs/{fr,en}.md                   # documentation utilisateur (ré-hébergée par Gladys)
 ├─ gladys-assistant-integration.json # manifest
@@ -92,39 +91,39 @@ npm test               # tests unitaires
 npx github:GladysAssistant/integration-store .   # validation du store Gladys
 ```
 
-Automatismes GitHub :
+Workflows GitHub (identiques à
+[`gladys-forecastsolar`](https://github.com/prohand/gladys-forecastsolar)) :
 
-- **CI** (`ci.yml`) : Prettier, ESLint et tests à chaque pull request et
-  push sur `main`.
-- **Validation du manifest** (`validate-manifest.yml`) : le validateur
-  officiel du store Gladys tourne sur chaque pull request. Une erreur de
-  manifest est repérée avant la publication. Le contrôle de l'image Docker
-  échoue tant que la 1re release n'est pas publiée (image absente).
-- **Dependabot** (`.github/dependabot.yml`) : chaque semaine, une pull
-  request pour les actions GitHub et une pour l'image de base Node (épinglée
-  par digest dans le `Dockerfile`).
+- **CI** (`ci.yml`) : à chaque pull request et push sur `main`, Prettier,
+  ESLint et tests sous Node 22 et 24. Sur les pull requests seulement : build
+  de l'image Docker (sans la publier) et **contrôles du store Gladys**
+  (validateur officiel). Une erreur de manifest est donc repérée avant la
+  publication. Le contrôle de l'image Docker échoue tant que la 1re release
+  n'est pas publiée et que le package `ghcr.io` n'est pas public.
+- **Build and publish image** (`build.yml`) : image multi-arch sur `ghcr.io`.
+- **Release** (`release.yml`) : nouvelle version depuis l'interface GitHub.
+- **GitHub releases** (`github-release.yml`) : crée la Release GitHub de
+  chaque tag `vX.Y.Z` qui n'en a pas, avec les notes du changelog.
+- **Dependabot** (`.github/dependabot.yml`) : dépendances npm chaque
+  semaine, actions GitHub et image de base Node chaque mois.
 
 ## Publier
 
 1. Ajouter le topic GitHub `gladys-assistant-integration` au dépôt (dépôt public).
 2. Noter les changements sous `## [Unreleased]` dans [`CHANGELOG.md`](./CHANGELOG.md).
-3. **Actions → Release → Run workflow** :
-   - `current` pour la toute première release (publie la version 1.0.0
-     actuelle, sans l'augmenter) ;
-   - ensuite `patch`, `minor` ou `major`.
-
-   Le workflow met la version à jour partout, déplace `Unreleased` dans la
+3. **Actions → Release → Run workflow** (`patch`, `minor` ou `major`) : le
+   workflow met la version à jour partout, déplace `Unreleased` dans la
    section de la nouvelle version, pousse le tag `vX.Y.Z`, construit l'image
    `ghcr.io/prohand/gladys-homekitcontroller` (`linux/amd64` + `linux/arm64`)
-   puis publie la **Release GitHub** avec les notes du changelog.
-
+   et publie la **Release GitHub** avec les notes du changelog. La 1re
+   release en `patch` donne la version 1.0.1, comme sur `gladys-forecastsolar`.
 4. Après la 1re release : rendre le package `ghcr.io` **public** (paramètres
    du package sur GitHub).
 5. L'indexeur du store Gladys détecte la nouvelle version.
 
 ## Notes
 
-- Node.js ≥ 20. L'image utilise Node 24.
+- Node.js ≥ 22. L'image utilise Node 24.
 - `npm ci --ignore-scripts` dans le Dockerfile : `hap-controller` dépend du
   module Bluetooth natif `noble`, qu'on ne charge jamais (on importe
   directement le transport IP). Les alertes `npm audit` viennent de cette

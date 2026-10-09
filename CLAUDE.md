@@ -35,7 +35,9 @@ Avant chaque commit : `npm run format:check && npm run lint && npm test`.
 - `src/hap/` : client HAP (`client.js`), lecture mDNS (`discovery.js`), types
   de services / caractéristiques (`uuid.js`).
 - `src/store.js` : appairages dans `/data/pairings.json`.
-- `scripts/changelog.js` : outil du CHANGELOG utilisé par les workflows de release.
+- `.github/` : workflows et Dependabot **identiques à `prohand/gladys-forecastsolar`**
+  (garder les deux dépôts alignés). `.github/scripts/changelog-release.mjs`
+  déplace `Unreleased` dans la nouvelle version lors d'une release.
 - `test/helpers/` : faux SDK Gladys, faux client HAP, base d'accessoires de test.
 
 ## Règles à respecter
@@ -57,7 +59,7 @@ Avant chaque commit : `npm run format:check && npm run lint && npm test`.
   caractères par langue, textes multilingues en objet `{ en, fr }` (y compris
   `placeholder`), `default` identiques à `DEFAULT_CONFIG` (`src/config.js`),
   chaque action doit avoir un `gladys.onAction` dans `index.js`. Les tests
-  `test/manifest.test.js` et le workflow « Validate manifest » le vérifient.
+  `test/manifest.test.js` et le job « Store admission checks » de la CI (sur les PR) le vérifient.
 - **Docs utilisateur** `docs/fr.md` et `docs/en.md` obligatoires (store) : les
   mettre à jour quand le comportement visible change.
 - Commentaires de code en anglais, style du code existant (ESM, Prettier).

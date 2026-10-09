@@ -1,64 +1,75 @@
 # -----------------------------------------------------------------------------
-# Publish the GitHub Release of a version, its notes taken from CHANGELOG.md.
+# Publish a GitHub Release for every `vX.Y.Z` tag that has none yet.
 #
-# Triggers:
-#   - called by the Release workflow (workflow_call) once the image is built;
-#   - a Git version tag (e.g. `v1.2.0`) pushed by hand. Tags pushed by the
-#     Release workflow do not trigger it (default GITHUB_TOKEN), so a release
-#     is never published twice.
+# Gladys links the version shown on the Supervision page to
+# `<repo>/releases?q=X.Y.Z OR vX.Y.Z`: a tag alone shows an empty page there,
+# so every version needs a Release of its own.
 #
-# Idempotent: re-running it updates the notes of an existing release.
+# Idempotent: it only creates what is missing, oldest first, so it can run on
+# every push to main (that is what back-fills the versions published before it
+# existed), by hand, and from release.yml right after a new tag — a tag pushed
+# with the default GITHUB_TOKEN triggers no workflow on its own.
+#
+# The notes are the version's section of CHANGELOG.md when there is one, the
+# pull requests GitHub lists since the previous tag otherwise.
 # -----------------------------------------------------------------------------
-name: GitHub Release
+name: GitHub releases
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [main]
+  workflow_dispatch:
   workflow_call:
-    inputs:
-      tag:
-        description: 'Tag to release, e.g. v1.2.0'
-        required: true
-        type: string
+
+concurrency:
+  group: github-releases
+  cancel-in-progress: false
 
 jobs:
-  release:
+  releases:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # create the release
-    env:
-      TAG: ${{ inputs.tag || github.ref_name }}
+      contents: write # create the releases
     steps:
-      - name: Checkout the tag
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v7
         with:
-          ref: ${{ inputs.tag || github.ref }}
+          fetch-depth: 0
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
-      - name: Release notes from CHANGELOG.md
-        run: |
-          set -euo pipefail
-          version="${TAG#v}"
-          if ! node scripts/changelog.js notes "$version" > notes.md; then
-            echo "::warning::CHANGELOG.md has no section for ${version}"
-            echo "Voir les commits de cette version." > notes.md
-          fi
-          image="ghcr.io/${GITHUB_REPOSITORY,,}:${version}"
-          printf '\n---\n\nImage Docker : `%s` (linux/amd64, linux/arm64)\n' "$image" >> notes.md
-          cat notes.md
-
-      - name: Create or update the GitHub Release
+      - name: Create the missing releases
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release edit "$TAG" --title "$TAG" --notes-file notes.md
-          else
-            gh release create "$TAG" --title "$TAG" --notes-file notes.md --verify-tag
-          fi
+          git fetch --force --tags origin
+
+          existing="$(gh release list --limit 1000 --json tagName --jq '.[].tagName')"
+          latest="$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n1)"
+
+          for tag in $(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=v:refname); do
+            if grep -qxF "$tag" <<<"$existing"; then
+              continue
+            fi
+            version="${tag#v}"
+
+            notes=""
+            if [ -f CHANGELOG.md ]; then
+              # The lines between "## [X.Y.Z]" (or "## X.Y.Z") and the next "## ", read
+              # from the current changelog: it also covers the versions tagged
+              # before the file existed.
+              notes="$(awk -v v="$version" '
+                /^## / { if (found) exit; if (index($0, "[" v "]") || $2 == v) { found = 1; next } }
+                found { print }
+              ' CHANGELOG.md || true)"
+            fi
+
+            is_latest=false
+            [ "$tag" = "$latest" ] && is_latest=true
+
+            if [ -n "$(tr -d '[:space:]' <<<"$notes")" ]; then
+              gh release create "$tag" --verify-tag --title "$tag" --notes "$notes" --latest="$is_latest"
+            else
+              gh release create "$tag" --verify-tag --title "$tag" --generate-notes --latest="$is_latest"
+            fi
+            echo "Created release $tag"
+          done
