@@ -1,0 +1,30 @@
+{
+  "name": "gladys-homekit-controller",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Gladys Assistant external integration: pair and control HomeKit (HAP over IP) accessories directly, without an Apple hub.",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@gladysassistant/integration-sdk": "^0.14.0",
+    "hap-controller": "^0.10.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.7.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.7.0",
+    "prettier": "^3.9.5"
+  },
+  "license": "Apache-2.0"
+}

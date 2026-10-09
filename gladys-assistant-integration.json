@@ -1,0 +1,165 @@
+{
+  "manifest_version": 1,
+  "type": "device",
+  "name": "HomeKit Controller",
+  "description": {
+    "en": "Pair and control your HomeKit Wi-Fi/Ethernet accessories from Gladys, no Apple hub needed.",
+    "fr": "Appairez et pilotez vos accessoires HomeKit Wi-Fi/Ethernet depuis Gladys, sans hub Apple."
+  },
+  "version": "1.0.0",
+  "docker_image": "ghcr.io/prohand/gladys-homekitcontroller:1.0.0",
+  "gladys_version": ">=4.86.0",
+  "cover_image": "https://raw.githubusercontent.com/prohand/gladys-homekitcontroller/main/cover.png",
+  "categories": ["protocols", "lighting", "climate"],
+  "network_discovery": [
+    {
+      "type": "mdns",
+      "service": "_hap._tcp"
+    }
+  ],
+  "config_schema": [
+    {
+      "key": "intro",
+      "type": "section",
+      "label": {
+        "en": "Getting started",
+        "fr": "Pour commencer"
+      },
+      "description": {
+        "en": "1. Remove the accessory from Apple Home (a HomeKit accessory accepts only one controller). 2. Click \"Search for accessories\" below. 3. Click \"Pair an accessory\" with its name and the 8-digit setup code printed on it. 4. Add its devices from the Discovery tab.",
+        "fr": "1. Retirez l'accessoire de l'app Maison d'Apple (un accessoire HomeKit n'accepte qu'un seul contrôleur). 2. Cliquez sur « Rechercher les accessoires » ci-dessous. 3. Cliquez sur « Appairer un accessoire » avec son nom et le code à 8 chiffres imprimé dessus. 4. Ajoutez ses appareils depuis l'onglet Découverte."
+      },
+      "links": [
+        {
+          "url": "https://github.com/prohand/gladys-homekitcontroller",
+          "label": {
+            "en": "Integration page",
+            "fr": "Page de l'intégration"
+          }
+        }
+      ]
+    },
+    {
+      "key": "poll_frequency",
+      "type": "number",
+      "label": {
+        "en": "Refresh interval (s)",
+        "fr": "Intervalle de rafraîchissement (s)"
+      },
+      "description": {
+        "en": "HomeKit pushes changes in real time; this full refresh is only a safety net.",
+        "fr": "HomeKit envoie les changements en temps réel ; ce rafraîchissement complet n'est qu'une sécurité."
+      },
+      "required": false,
+      "default": 60,
+      "min": 10,
+      "max": 3600
+    },
+    {
+      "key": "scan_timeout",
+      "type": "number",
+      "label": {
+        "en": "Search duration (s)",
+        "fr": "Durée de recherche (s)"
+      },
+      "description": {
+        "en": "How long Gladys listens for HomeKit accessories on the network.",
+        "fr": "Durée pendant laquelle Gladys écoute les accessoires HomeKit sur le réseau."
+      },
+      "required": false,
+      "default": 10,
+      "min": 3,
+      "max": 30
+    }
+  ],
+  "actions": [
+    {
+      "key": "list_accessories",
+      "label": {
+        "en": "Search for accessories",
+        "fr": "Rechercher les accessoires"
+      },
+      "timeout_seconds": 45
+    },
+    {
+      "key": "pair",
+      "label": {
+        "en": "Pair an accessory",
+        "fr": "Appairer un accessoire"
+      },
+      "timeout_seconds": 120,
+      "fields": [
+        {
+          "key": "accessory",
+          "type": "string",
+          "label": {
+            "en": "Accessory",
+            "fr": "Accessoire"
+          },
+          "description": {
+            "en": "Name, HomeKit ID or IP address shown by the search, or IP:port.",
+            "fr": "Nom, identifiant HomeKit ou adresse IP affichés par la recherche, ou IP:port."
+          },
+          "required": true
+        },
+        {
+          "key": "setup_code",
+          "type": "string",
+          "label": {
+            "en": "Setup code",
+            "fr": "Code de configuration"
+          },
+          "placeholder": {
+            "en": "123-45-678",
+            "fr": "123-45-678"
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "key": "identify",
+      "label": {
+        "en": "Identify a device",
+        "fr": "Identifier un appareil"
+      },
+      "timeout_seconds": 30,
+      "fields": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Device",
+            "fr": "Appareil"
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "key": "unpair",
+      "label": {
+        "en": "Unpair an accessory",
+        "fr": "Désappairer un accessoire"
+      },
+      "timeout_seconds": 30,
+      "fields": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Device",
+            "fr": "Appareil"
+          },
+          "description": {
+            "en": "The whole accessory is unpaired (every device of a bridge).",
+            "fr": "Tout l'accessoire est désappairé (tous les appareils d'un pont)."
+          },
+          "required": true
+        }
+      ]
+    }
+  ]
+}
