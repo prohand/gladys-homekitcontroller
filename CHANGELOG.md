@@ -11,6 +11,8 @@ la section de la nouvelle version et les publie dans la Release GitHub.
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-09
+
 ### Ajouté
 
 - Intégration « HomeKit Controller » : Gladys devient un contrôleur HomeKit
@@ -33,4 +35,5 @@ la section de la nouvelle version et les publie dans la Release GitHub.
   Docker (chaque mois).
 - Une Release GitHub par version, avec les notes de ce changelog.
 
-[Unreleased]: https://github.com/prohand/gladys-homekitcontroller/commits/main
+[Unreleased]: https://github.com/prohand/gladys-homekitcontroller/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/prohand/gladys-homekitcontroller/releases/tag/v1.0.1
