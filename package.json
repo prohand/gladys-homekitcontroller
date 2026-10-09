@@ -1,6 +1,6 @@
 {
   "name": "gladys-homekit-controller",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "description": "Gladys Assistant external integration: pair and control HomeKit (HAP over IP) accessories directly, without an Apple hub.",
   "type": "module",

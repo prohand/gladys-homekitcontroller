@@ -11,6 +11,8 @@ la section de la nouvelle version et les publie dans la Release GitHub.
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-10-09
+
 ### Ajouté
 
 - Déclencheur de scène « Bouton HomeKit appuyé » : boutons programmables et
@@ -50,5 +52,6 @@ la section de la nouvelle version et les publie dans la Release GitHub.
   Docker (chaque mois).
 - Une Release GitHub par version, avec les notes de ce changelog.
 
-[Unreleased]: https://github.com/prohand/gladys-homekitcontroller/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/prohand/gladys-homekitcontroller/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/prohand/gladys-homekitcontroller/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/prohand/gladys-homekitcontroller/releases/tag/v1.0.1
