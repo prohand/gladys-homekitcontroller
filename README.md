@@ -34,6 +34,14 @@ Documentation utilisateur : [`docs/fr.md`](./docs/fr.md) / [`docs/en.md`](./docs
   À partir du 2e échec, elle relance une recherche mDNS pour retrouver une
   nouvelle adresse IP (bail DHCP changé).
 
+- **Scènes** : les boutons programmables et sonnettes déclenchent
+  `button_pressed`, la perte / le retour d'un accessoire déclenche
+  `accessory_status` (`publishSceneEvent`). Actions de scène `identify` et
+  `refresh` (`onSceneAction`).
+- **Widget** : `accessories` (en ligne / hors ligne, bouton « Reconnecter »),
+  contenu construit par `src/widgets.js`. Ces champs du manifest exigent
+  Gladys ≥ 5.1.0.
+
 Limites : pas de Bluetooth (BLE) ni de Thread (le conteneur n'a pas accès à
 la radio), pas de caméras ni de télévisions pour l'instant.
 
@@ -46,6 +54,7 @@ la radio), pas de caméras ni de télévisions pour l'instant.
 │  ├─ controller.js                  # connexions, événements, commandes, appairage
 │  ├─ store.js                       # stockage des appairages dans /data
 │  ├─ config.js                      # valeurs par défaut + normalisation de la config
+│  ├─ widgets.js                     # contenu du widget de tableau de bord
 │  ├─ hap/
 │  │  ├─ client.js                   # client HAP IP (hap-controller) + timeouts
 │  │  ├─ discovery.js                # lecture des réponses mDNS, code de config

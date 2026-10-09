@@ -11,6 +11,21 @@ la section de la nouvelle version et les publie dans la Release GitHub.
 
 ## [Unreleased]
 
+### Ajouté
+
+- Déclencheur de scène « Bouton HomeKit appuyé » : boutons programmables et
+  sonnettes (appui simple, double, long ; filtre par appareil et numéro de
+  bouton).
+- Déclencheur de scène « Accessoire HomeKit perdu / revenu ».
+- Actions de scène « Identifier un appareil HomeKit » et « Relire un
+  appareil HomeKit ».
+- Widget de tableau de bord « Accessoires HomeKit » : accessoires en ligne /
+  hors ligne et bouton « Reconnecter ».
+
+### Modifié
+
+- Gladys 5.1.0 ou plus récent est maintenant nécessaire (widgets et scènes).
+
 ## [1.0.1] - 2026-10-09
 
 ### Ajouté

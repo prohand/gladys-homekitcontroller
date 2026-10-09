@@ -35,6 +35,13 @@ Avant chaque commit : `npm run format:check && npm run lint && npm test`.
 - `src/hap/` : client HAP (`client.js`), lecture mDNS (`discovery.js`), types
   de services / caractéristiques (`uuid.js`).
 - `src/store.js` : appairages dans `/data/pairings.json`.
+- `src/widgets.js` : contenu **pur** du widget `accessories` (vocabulaire du
+  core, vérifié par `validateWidgetContent` dans les tests).
+- Scènes : déclencheurs `button_pressed` / `accessory_status` publiés par le
+  contrôleur (`SCENE_TRIGGERS`), actions `identify` / `refresh` dans
+  `index.js`. **Ne jamais renommer une clé publiée** (déclencheur, action,
+  widget) : les scènes des utilisateurs la référencent. Ces champs exigent
+  `gladys_version` ≥ 5.1.0.
 - `.github/` : workflows et Dependabot **identiques à `prohand/gladys-forecastsolar`**
   (garder les deux dépôts alignés). `.github/scripts/changelog-release.mjs`
   déplace `Unreleased` dans la nouvelle version lors d'une release.

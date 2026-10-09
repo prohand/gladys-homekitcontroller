@@ -11,6 +11,8 @@ export function createFakeGladys({ mdnsResults = [] } = {}) {
   const discovered = [];
   const connectionStatuses = [];
   const scans = [];
+  const sceneEvents = [];
+  const widgetRefreshes = [];
 
   return {
     connected: true,
@@ -18,6 +20,8 @@ export function createFakeGladys({ mdnsResults = [] } = {}) {
     discovered,
     connectionStatuses,
     scans,
+    sceneEvents,
+    widgetRefreshes,
 
     externalIds(type, platformId) {
       const device = `${type}:${platformId}`;
@@ -43,6 +47,14 @@ export function createFakeGladys({ mdnsResults = [] } = {}) {
 
     async setConnectionStatus(connected, message) {
       connectionStatuses.push({ connected, message });
+    },
+
+    async publishSceneEvent(key, data) {
+      sceneEvents.push({ key, data });
+    },
+
+    requestWidgetRefresh(key) {
+      widgetRefreshes.push(key);
     },
 
     async scanNetwork(type, options) {

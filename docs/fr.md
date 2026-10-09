@@ -14,6 +14,7 @@ local, **sans iPhone, sans Apple TV ni HomePod**, et sans cloud.
 - L'accessoire doit être sur le **même réseau local** que Gladys.
 - Seuls les accessoires **IP** (Wi-Fi, Ethernet) sont pris en charge. Les
   accessoires Bluetooth et Thread ne le sont pas.
+- Il faut **Gladys 5.1.0 ou plus récent**.
 
 ## Appairer un accessoire
 
@@ -47,8 +48,10 @@ Un **pont** (bridge) HomeKit donne un appareil Gladys par accessoire relié.
 |                              | particules PM2.5 / PM10                        |
 | Batterie                     | Niveau, batterie faible                        |
 
-Les autres services (caméras, télévisions, boutons programmables…) sont
-ignorés pour l'instant.
+Les **boutons programmables** et les **sonnettes** ne sont pas des appareils :
+leurs appuis déclenchent des scènes (voir plus bas).
+
+Les autres services (caméras, télévisions…) sont ignorés pour l'instant.
 
 ## Réglages
 
@@ -67,6 +70,34 @@ ignorés pour l'instant.
 - **Désappairer un accessoire** : retire l'appairage de l'accessoire et de
   Gladys. Pour un pont, tous ses appareils sont concernés. Supprimez ensuite
   les appareils dans Gladys.
+
+## Scènes
+
+Déclencheurs (« Quand… ») :
+
+- **Bouton HomeKit appuyé** : un bouton ou une sonnette a été appuyé. Filtres
+  facultatifs : l'appareil, le type d'appui (simple, double, long) et le
+  numéro du bouton (pour une télécommande à plusieurs boutons). Variables :
+  accessoire, bouton, numéro du bouton, appui, sonnette.
+- **Accessoire HomeKit perdu / revenu** : un accessoire est devenu
+  injoignable, ou est revenu. Filtres facultatifs : l'appareil et l'état.
+  Pour un pont, chaque appareil relié envoie son propre événement.
+
+Pour choisir un bouton dans le filtre « Appareil », l'accessoire doit avoir
+créé un appareil dans Gladys (par exemple grâce à sa batterie). Sinon,
+laissez le filtre vide.
+
+Actions (« Alors… ») :
+
+- **Identifier un appareil HomeKit** : l'accessoire se signale.
+- **Relire un appareil HomeKit** : relit tout de suite toutes ses valeurs
+  (utile avant une condition).
+
+## Widget du tableau de bord
+
+Le widget **Accessoires HomeKit** affiche le nombre d'accessoires en ligne
+et hors ligne, la liste des accessoires (les injoignables en premier) et,
+s'il y en a un hors ligne, un bouton **Reconnecter**.
 
 ## Dépannage
 

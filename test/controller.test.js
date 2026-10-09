@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { validateWidgetContent } from '@gladysassistant/integration-sdk';
 import { HomeKitController } from '../src/controller.js';
-import { BRIDGE_DATABASE, MDNS_RESULTS } from './helpers/fixtures.js';
+import { BRIDGE_DATABASE, BUTTON_DATABASE, MDNS_RESULTS } from './helpers/fixtures.js';
 import {
   createFakeClientFactory,
   createFakeGladys,
@@ -241,4 +242,82 @@ test('a Gladys API failure does not mark the accessory offline', async (t) => {
   client.emit('event', { characteristics: [{ aid: 3, iid: 10, value: 30 }] });
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(stateOf(gladys, 'accessory:1a2b3c4d5e6f-3:10'), 30);
+});
+
+test('a button press fires the button_pressed scene trigger', async (t) => {
+  const { gladys, factory, controller } = await startController(t, {
+    factoryOptions: { database: BUTTON_DATABASE },
+  });
+  const [client] = factory.clients;
+  assert.ok(client.subscribed.includes('1.11'));
+  assert.ok(client.subscribed.includes('1.21'));
+  assert.equal(controller.buildDiscoveredDevices()[0].features.length, 2, 'battery only');
+
+  client.emit('event', { characteristics: [{ aid: 1, iid: 21, value: 1 }] });
+  // A read of a ProgrammableSwitchEvent returns null: not a press.
+  client.emit('event', { characteristics: [{ aid: 1, iid: 11, value: null }] });
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.deepEqual(gladys.sceneEvents, [
+    {
+      key: 'button_pressed',
+      data: {
+        device: 'accessory:1a2b3c4d5e6f-1',
+        press: 'double',
+        button_index: 2,
+        accessory: 'Hall remote',
+        button: 'Down',
+        doorbell: false,
+      },
+    },
+  ]);
+});
+
+test('losing and getting back an accessory fires the status trigger', async (t) => {
+  const { gladys, factory, controller } = await startController(t);
+  assert.deepEqual(gladys.sceneEvents, [], 'the startup is not an event');
+  const state = controller.states.get(BRIDGE_ID);
+
+  factory.clients[0].emit('event-disconnect');
+  await new Promise((resolve) => setImmediate(resolve));
+  const offline = gladys.sceneEvents.filter((e) => e.data.status === 'offline');
+  assert.deepEqual(
+    offline.map((e) => [e.key, e.data.device, e.data.accessory]),
+    [
+      ['accessory_status', 'accessory:1a2b3c4d5e6f-2', 'Living room bulb'],
+      ['accessory_status', 'accessory:1a2b3c4d5e6f-3', 'Hallway sensor'],
+      ['accessory_status', 'accessory:1a2b3c4d5e6f-4', 'Bedroom blind'],
+    ],
+  );
+  assert.ok(gladys.widgetRefreshes.includes('accessories'));
+
+  // A second failure while already offline is not a new event.
+  controller.markOffline(state, new Error('still down'));
+  assert.equal(gladys.sceneEvents.length, 3);
+
+  const message = await controller.reconnectOffline();
+  assert.equal(message.fr, '1/1 accessoire(s) reconnecté(s)');
+  const online = gladys.sceneEvents.filter((e) => e.data.status === 'online');
+  assert.equal(online.length, 3);
+});
+
+test('the accessories widget fits the core vocabulary', async (t) => {
+  const { controller } = await startController(t);
+  const online = controller.buildAccessoriesWidget();
+  assert.deepEqual(validateWidgetContent(online), []);
+  assert.equal(online.components[0].value, 1);
+  assert.ok(!online.components.some((c) => c.type === 'button'), 'nothing to reconnect');
+
+  controller.markOffline(controller.states.get(BRIDGE_ID), new Error('down'));
+  const offline = controller.buildAccessoriesWidget();
+  assert.deepEqual(validateWidgetContent(offline), []);
+  assert.equal(offline.components[1].value, 1);
+  assert.deepEqual(offline.components.at(-1).action, { key: 'reconnect' });
+});
+
+test('the accessories widget has an empty state', async (t) => {
+  const { controller } = await startController(t, { records: [] });
+  const content = controller.buildAccessoriesWidget();
+  assert.deepEqual(validateWidgetContent(content), []);
+  assert.equal(content.components[0].type, 'text');
 });

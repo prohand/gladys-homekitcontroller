@@ -87,6 +87,30 @@ gladys.onAction('identify', async (fields) => {
   return controller.identify(fields.device);
 });
 
+// --- Scene actions: cards of the Gladys scene editor -------------------------
+// The scene triggers (button pressed, accessory status) are fired by the
+// controller with publishSceneEvent.
+gladys.onSceneAction('identify', async (fields) => {
+  logger.info(`Scene action identify <- ${fields.device}`);
+  await controller.identify(fields.device);
+});
+
+gladys.onSceneAction('refresh', async (fields) => {
+  logger.info(`Scene action refresh <- ${fields.device}`);
+  await controller.poll({ external_id: fields.device });
+});
+
+// --- Dashboard widget ---------------------------------------------------------
+gladys.onWidgetGet('accessories', async () => controller.buildAccessoriesWidget());
+
+gladys.onWidgetAction('accessories', async (actionKey) => {
+  logger.info(`Widget action ${actionKey}`);
+  if (actionKey !== 'reconnect') {
+    throw new Error(`Unknown widget action ${actionKey}`);
+  }
+  return controller.reconnectOffline();
+});
+
 // --- Configuration updated by the user ---------------------------------------
 gladys.onConfigUpdated(async (newConfig) => {
   logger.info('onConfigUpdated -> new configuration received');
