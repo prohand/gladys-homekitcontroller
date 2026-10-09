@@ -1,15 +1,20 @@
 # -----------------------------------------------------------------------------
 # Cut a new release — entirely from the GitHub UI, no local tooling needed.
 #
-# In GitHub: Actions -> Release -> "Run workflow" -> pick patch / minor / major.
+# In GitHub: Actions -> Release -> "Run workflow" -> pick the release type:
+#   - current: release the version already in package.json, without bumping
+#     it (the very first release, 1.0.0);
+#   - patch / minor / major: bump the version first.
 #
 # What it does, in one run:
-#   1. computes the next semver from `package.json` (npm version rules);
+#   1. computes the version from `package.json` (npm version rules);
 #   2. writes it into `package.json`, `package-lock.json` AND the manifest
 #      (`gladys-assistant-integration.json`: both `version` and the
 #      `docker_image` tag, so the indexer and the image stay in lockstep);
-#   3. commits the bump and pushes the `vX.Y.Z` tag;
-#   4. calls build.yml to publish the multi-arch image (`:X.Y.Z` + `:latest`).
+#   3. moves the "Unreleased" entries of CHANGELOG.md into the new version;
+#   4. commits and pushes the `vX.Y.Z` tag;
+#   5. calls build.yml to publish the multi-arch image (`:X.Y.Z` + `:latest`);
+#   6. publishes the GitHub Release, its notes taken from CHANGELOG.md.
 #
 # Why call build.yml instead of relying on the tag push: a tag pushed with the
 # default GITHUB_TOKEN does NOT trigger other workflows, so we invoke the build
@@ -21,7 +26,7 @@ on:
   workflow_dispatch:
     inputs:
       release-type:
-        description: 'Version bump for this release'
+        description: 'current = release the version in package.json as is (first release)'
         required: true
         type: choice
         default: patch
@@ -29,6 +34,12 @@ on:
           - patch
           - minor
           - major
+          - current
+
+# Two releases at once would compute the same version.
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   prepare:
@@ -55,11 +66,20 @@ jobs:
         run: |
           set -euo pipefail
 
-          # npm computes the next semver and writes it to package.json (and
-          # package-lock.json). --no-git-tag-version: we own the commit + tag
-          # below, so npm must not touch git.
-          new_version="$(npm version "$RELEASE_TYPE" --no-git-tag-version | tail -n1)"
-          new_version="${new_version#v}" # v1.2.0 -> 1.2.0
+          if [ "$RELEASE_TYPE" = "current" ]; then
+            new_version="$(jq -r .version package.json)"
+          else
+            # npm computes the next semver and writes it to package.json (and
+            # package-lock.json). --no-git-tag-version: we own the commit +
+            # tag below, so npm must not touch git.
+            new_version="$(npm version "$RELEASE_TYPE" --no-git-tag-version | tail -n1)"
+            new_version="${new_version#v}" # v1.2.0 -> 1.2.0
+          fi
+
+          if git rev-parse -q --verify "refs/tags/v${new_version}" >/dev/null; then
+            echo "::error::Tag v${new_version} already exists. Pick patch, minor or major."
+            exit 1
+          fi
 
           image="ghcr.io/${GITHUB_REPOSITORY,,}:${new_version}"
 
@@ -70,6 +90,10 @@ jobs:
             '.version = $version | .docker_image = $image' \
             gladys-assistant-integration.json > "$tmp"
           mv "$tmp" gladys-assistant-integration.json
+
+          # "Unreleased" -> "## [X.Y.Z] - date" in CHANGELOG.md.
+          node scripts/changelog.js release "$new_version" "$(date -u +%F)"
+          npx --yes prettier@3 --write CHANGELOG.md gladys-assistant-integration.json
 
           echo "version=${new_version}" >> "$GITHUB_OUTPUT"
 
@@ -85,7 +109,7 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add package.json package-lock.json gladys-assistant-integration.json
+          git add package.json package-lock.json gladys-assistant-integration.json CHANGELOG.md
           git commit -m "chore(release): ${VERSION}"
           git tag -a "v${VERSION}" -m "Release ${VERSION}"
 
@@ -101,3 +125,12 @@ jobs:
       packages: write
     with:
       version: ${{ needs.prepare.outputs.version }}
+
+  # Publish the GitHub Release once the image exists.
+  github-release:
+    needs: [prepare, build]
+    uses: ./.github/workflows/github-release.yml
+    permissions:
+      contents: write
+    with:
+      tag: v${{ needs.prepare.outputs.version }}

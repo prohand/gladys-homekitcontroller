@@ -53,6 +53,7 @@ la radio), pas de caméras ni de télévisions pour l'instant.
 │  └─ mapping/
 │     ├─ index.js                    # services HomeKit -> fonctionnalités Gladys
 │     └─ color.js                    # conversions teinte/saturation <-> RGB
+├─ scripts/changelog.js              # CHANGELOG -> notes de Release (workflows)
 ├─ test/                             # tests unitaires (node --test)
 ├─ docs/{fr,en}.md                   # documentation utilisateur (ré-hébergée par Gladys)
 ├─ gladys-assistant-integration.json # manifest
@@ -81,6 +82,9 @@ le conteneur. `HOMEKIT_DATA_DIR` vaut `/data` par défaut.
 
 ## Contrôles qualité
 
+Voir aussi [`CLAUDE.md`](./CLAUDE.md) (règles du projet) et
+[`SECURITY.md`](./SECURITY.md) (signaler une faille).
+
 ```bash
 npm run format:check   # Prettier
 npm run lint           # ESLint
@@ -88,18 +92,35 @@ npm test               # tests unitaires
 npx github:GladysAssistant/integration-store .   # validation du store Gladys
 ```
 
-Les trois premiers tournent dans la CI à chaque push sur `main` et à chaque
-pull request.
+Automatismes GitHub :
+
+- **CI** (`ci.yml`) : Prettier, ESLint et tests à chaque pull request et
+  push sur `main`.
+- **Validation du manifest** (`validate-manifest.yml`) : le validateur
+  officiel du store Gladys tourne sur chaque pull request. Une erreur de
+  manifest est repérée avant la publication. Le contrôle de l'image Docker
+  échoue tant que la 1re release n'est pas publiée (image absente).
+- **Dependabot** (`.github/dependabot.yml`) : chaque semaine, une pull
+  request pour les actions GitHub et une pour l'image de base Node (épinglée
+  par digest dans le `Dockerfile`).
 
 ## Publier
 
 1. Ajouter le topic GitHub `gladys-assistant-integration` au dépôt (dépôt public).
-2. **Actions → Release → Run workflow** (`patch`, `minor` ou `major`) : la
-   version est mise à jour partout, le tag `vX.Y.Z` est poussé et l'image
-   `ghcr.io/prohand/gladys-homekitcontroller` est construite en
-   `linux/amd64` + `linux/arm64`.
-3. Rendre le package `ghcr.io` **public** (paramètres du package sur GitHub).
-4. L'indexeur du store Gladys détecte la nouvelle version.
+2. Noter les changements sous `## [Unreleased]` dans [`CHANGELOG.md`](./CHANGELOG.md).
+3. **Actions → Release → Run workflow** :
+   - `current` pour la toute première release (publie la version 1.0.0
+     actuelle, sans l'augmenter) ;
+   - ensuite `patch`, `minor` ou `major`.
+
+   Le workflow met la version à jour partout, déplace `Unreleased` dans la
+   section de la nouvelle version, pousse le tag `vX.Y.Z`, construit l'image
+   `ghcr.io/prohand/gladys-homekitcontroller` (`linux/amd64` + `linux/arm64`)
+   puis publie la **Release GitHub** avec les notes du changelog.
+
+4. Après la 1re release : rendre le package `ghcr.io` **public** (paramètres
+   du package sur GitHub).
+5. L'indexeur du store Gladys détecte la nouvelle version.
 
 ## Notes
 
