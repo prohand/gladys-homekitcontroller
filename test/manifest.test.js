@@ -58,6 +58,10 @@ test('mDNS discovery of HomeKit accessories is declared', () => {
   assert.deepEqual(manifest.network_discovery, [{ type: 'mdns', service: '_hap._tcp' }]);
 });
 
+test('only the local transport is declared (HomeKit IP never uses a cloud)', () => {
+  assert.deepEqual(manifest.transports, ['local']);
+});
+
 test('gladys_version covers categories (4.86.0) and capabilities (5.1.0)', () => {
   assert.ok(manifest.categories.length >= 1 && manifest.categories.length <= 3);
   const minVersion = manifest.gladys_version.match(/>=\s*(\d+)\.(\d+)\.\d+/);
