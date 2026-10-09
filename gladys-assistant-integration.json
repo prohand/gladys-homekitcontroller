@@ -11,6 +11,7 @@
   "gladys_version": ">=5.1.0",
   "cover_image": "https://raw.githubusercontent.com/prohand/gladys-homekitcontroller/main/cover.png",
   "categories": ["protocols", "lighting", "climate"],
+  "transports": ["local"],
   "network_discovery": [
     {
       "type": "mdns",

@@ -11,6 +11,11 @@ la section de la nouvelle version et les publie dans la Release GitHub.
 
 ## [Unreleased]
 
+### Ajouté
+
+- Badge « local » dans le store : le manifest déclare `transports: ["local"]`
+  (les accessoires HomeKit IP sont pilotés sur le réseau local, sans cloud).
+
 ## [1.0.2] - 2026-10-09
 
 ### Ajouté
