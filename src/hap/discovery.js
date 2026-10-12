@@ -16,31 +16,19 @@
 // -----------------------------------------------------------------------------
 
 import net from 'node:net';
+import { parseMdnsTxt } from '@gladysassistant/integration-sdk';
 import { ACCESSORY_CATEGORY } from './uuid.js';
 
 /**
- * Turn the raw TXT entries (["id=AA:BB", "sf=1"...]) into an object.
- * Accepts an already-parsed object too.
+ * Turn the raw TXT entries (["id=AA:BB", "sf=1"...]) into an object, with the
+ * SDK's DNS-SD parser (lower-cased keys, first occurrence wins). Every HAP key
+ * carries a value: a bare attribute (`true`) is dropped rather than read as
+ * `sf=1` ("not paired") or as a device id "TRUE".
  */
 export function parseTxt(txt) {
-  if (!txt) {
-    return {};
-  }
-  if (!Array.isArray(txt)) {
-    return typeof txt === 'object' ? { ...txt } : {};
-  }
-  const result = {};
-  for (const entry of txt) {
-    if (typeof entry !== 'string') {
-      continue;
-    }
-    const index = entry.indexOf('=');
-    if (index <= 0) {
-      continue;
-    }
-    result[entry.slice(0, index).toLowerCase()] = entry.slice(index + 1);
-  }
-  return result;
+  return Object.fromEntries(
+    Object.entries(parseMdnsTxt(txt)).filter(([, value]) => typeof value === 'string'),
+  );
 }
 
 /** Normalize a HomeKit device id to "AA:BB:CC:DD:EE:FF". */

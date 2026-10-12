@@ -78,8 +78,6 @@ export class HomeKitController {
     this.states = new Map();
     // device external_id -> { id, aid }
     this.deviceIndex = new Map();
-    // feature external_id -> last published Gladys value (dedupe)
-    this.lastPublished = new Map();
     this.refreshTimer = null;
     this.lastAutoScanAt = 0;
     this.lastConnectionStatus = null;
@@ -444,24 +442,17 @@ export class HomeKitController {
       if (value === null || value === undefined || !Number.isFinite(value)) {
         continue;
       }
-      if (this.lastPublished.get(feature.externalId) === value) {
-        continue;
-      }
-      this.lastPublished.set(feature.externalId, value);
       states.push({ device_feature_external_id: feature.externalId, state: value });
     }
-    // The host API accepts at most 100 states per request. A Gladys-side
-    // failure must not be taken for an accessory failure: log it and forget
-    // the values so the next read publishes them again.
-    for (const batch of chunk(states, 100)) {
-      try {
-        await this.gladys.publishStates(batch);
-      } catch (err) {
-        this.logger.warn(`Publishing ${batch.length} state(s) to Gladys failed: ${err.message}`);
-        for (const { device_feature_external_id: externalId } of batch) {
-          this.lastPublished.delete(externalId);
-        }
-      }
+    // The SDK skips the values Gladys already holds, splits above 100 states
+    // and forgets a device's values when the user creates it (Gladys dropped
+    // the states sent before). A Gladys-side failure must not be taken for an
+    // accessory failure: log it; the SDK forgets the values that did not get
+    // through, so the next read publishes them again.
+    try {
+      await this.gladys.publishChangedStates(states);
+    } catch (err) {
+      this.logger.warn(`Publishing ${states.length} state(s) to Gladys failed: ${err.message}`);
     }
   }
 
@@ -604,8 +595,12 @@ export class HomeKitController {
     const readsWritten = descriptor.reads.some((iid) => writtenIids.includes(Number(iid)));
     const confirmed = readsWritten ? descriptor.read(get) : null;
     const published = Number.isFinite(confirmed) ? confirmed : Number(value);
-    this.lastPublished.set(descriptor.externalId, published);
-    await this.gladys.publishState(descriptor.externalId, published);
+    // Always sent, even when unchanged: it confirms the command to Gladys.
+    // Forgetting first keeps the SDK's memory in step with what was sent.
+    this.gladys.forgetPublishedStates(descriptor.externalId);
+    await this.gladys.publishChangedStates([
+      { device_feature_external_id: descriptor.externalId, state: published },
+    ]);
   }
 
   async poll(device) {
@@ -826,7 +821,7 @@ export class HomeKitController {
     for (const device of state.devices.values()) {
       this.deviceIndex.delete(device.externalId);
       for (const feature of device.features) {
-        this.lastPublished.delete(feature.externalId);
+        this.gladys.forgetPublishedStates(feature.externalId);
       }
     }
     this.states.delete(state.id);
