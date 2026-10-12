@@ -11,6 +11,10 @@ la section de la nouvelle version et les publie dans la Release GitHub.
 
 ## [Unreleased]
 
+### Modifié
+
+- SDK `@gladysassistant/integration-sdk` mis à jour en 0.15.0.
+
 ## [1.0.3] - 2026-10-09
 
 ### Ajouté
