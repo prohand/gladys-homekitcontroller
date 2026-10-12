@@ -11,6 +11,8 @@ la section de la nouvelle version et les publie dans la Release GitHub.
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-10-12
+
 ### Modifié
 
 - SDK `@gladysassistant/integration-sdk` mis à jour en 0.15.0.
@@ -71,7 +73,8 @@ la section de la nouvelle version et les publie dans la Release GitHub.
   Docker (chaque mois).
 - Une Release GitHub par version, avec les notes de ce changelog.
 
-[Unreleased]: https://github.com/prohand/gladys-homekitcontroller/compare/v1.0.3...HEAD
+[Unreleased]: https://github.com/prohand/gladys-homekitcontroller/compare/v1.0.4...HEAD
+[1.0.4]: https://github.com/prohand/gladys-homekitcontroller/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/prohand/gladys-homekitcontroller/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/prohand/gladys-homekitcontroller/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/prohand/gladys-homekitcontroller/releases/tag/v1.0.1
