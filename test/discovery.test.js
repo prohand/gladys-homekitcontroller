@@ -20,6 +20,18 @@ test('parseTxt turns raw TXT entries into an object', () => {
   assert.deepEqual(parseTxt(undefined), {});
 });
 
+test('parseTxt follows DNS-SD: first occurrence wins, keys lower-cased, bare keys dropped', () => {
+  assert.deepEqual(parseTxt(['ID=AA:BB', 'id=CC:DD', 'sf', 'md=a=b']), {
+    id: 'AA:BB',
+    md: 'a=b',
+  });
+  // A bare "sf" must not read as "not paired yet".
+  const [accessory] = parseMdnsResults([
+    { name: 'Lamp', addresses: ['192.168.1.9'], port: 80, txt: ['id=AA:BB', 'sf'] },
+  ]);
+  assert.equal(accessory.paired, true);
+});
+
 test('parseMdnsResults extracts the HomeKit accessories', () => {
   const accessories = parseMdnsResults([...MDNS_RESULTS, { name: 'no txt', port: 1 }]);
   assert.equal(accessories.length, 2);

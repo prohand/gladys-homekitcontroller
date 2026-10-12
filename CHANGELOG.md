@@ -14,6 +14,14 @@ la section de la nouvelle version et les publie dans la Release GitHub.
 ### Modifié
 
 - SDK `@gladysassistant/integration-sdk` mis à jour en 0.15.0.
+- Le dédoublonnage des états et la lecture des enregistrements TXT mDNS
+  passent par le SDK (`publishChangedStates`, `parseMdnsTxt`).
+
+### Corrigé
+
+- Un appareil ajouté dans Gladys reçoit ses valeurs dès la lecture suivante,
+  même quand elles n'ont pas changé depuis leur dernier envoi (Gladys ignorait
+  les états envoyés avant la création de l'appareil).
 
 ## [1.0.3] - 2026-10-09
 

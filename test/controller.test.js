@@ -97,6 +97,26 @@ test('events update the Gladys states, without duplicates', async (t) => {
   ]);
 });
 
+test('an unchanged value is published again once its device is (re)created in Gladys', async (t) => {
+  const { gladys, factory } = await startController(t);
+  const [client] = factory.clients;
+  const feature = 'accessory:1a2b3c4d5e6f-3:10';
+  const count = () => gladys.published.filter((p) => p.featureExternalId === feature).length;
+  const report = async () => {
+    client.emit('event', { characteristics: [{ aid: 3, iid: 10, value: 21.5 }] });
+    await new Promise((resolve) => setImmediate(resolve));
+  };
+  const before = count();
+
+  await report();
+  assert.equal(count(), before, 'unchanged: not sent again');
+
+  // What the SDK does when Gladys reports the device created.
+  gladys.forgetPublishedStates('accessory:1a2b3c4d5e6f-3');
+  await report();
+  assert.equal(count(), before + 1);
+});
+
 test('setValue writes the characteristic and publishes the new state', async (t) => {
   const { gladys, factory, controller } = await startController(t);
   const [client] = factory.clients;
@@ -117,6 +137,15 @@ test('setValue writes the characteristic and publishes the new state', async (t)
   );
   assert.deepEqual(client.writes.at(-1), { 4.11: 100 });
   assert.equal(stateOf(gladys, 'accessory:1a2b3c4d5e6f-4:state-11'), 1);
+
+  // The same command again is still confirmed to Gladys.
+  const sent = gladys.published.length;
+  await controller.setValue(
+    { external_id: 'accessory:1a2b3c4d5e6f-4' },
+    { external_id: 'accessory:1a2b3c4d5e6f-4:state-11' },
+    1,
+  );
+  assert.equal(gladys.published.length, sent + 1);
 });
 
 test('setValue refuses read-only features and unknown devices', async (t) => {
