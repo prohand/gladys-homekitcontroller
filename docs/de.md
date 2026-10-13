@@ -49,7 +49,7 @@ Eine HomeKit-**Bridge** ergibt ein Gladys-Gerät pro angebundenem Zubehör.
 |                             | CO, CO2, Feinstaub PM2.5 / PM10              |
 | Batterie                    | Ladestand, niedriger Batteriestand           |
 
-**Programmierbare Tasten** und **Türklingeln** sind keine Geräte: Dein
+**Programmierbare Tasten** und **Türklingeln** sind keine Geräte: Ihr
 Drücken löst Szenen aus (siehe unten).
 
 Andere Dienste (Kameras, Fernseher…) werden vorerst ignoriert.
