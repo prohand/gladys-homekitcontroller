@@ -11,6 +11,8 @@ la section de la nouvelle version et les publie dans la Release GitHub.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-13
+
 ### Ajouté
 
 - Traductions allemande et espagnole (écran de configuration, messages,
@@ -83,7 +85,8 @@ la section de la nouvelle version et les publie dans la Release GitHub.
   Docker (chaque mois).
 - Une Release GitHub par version, avec les notes de ce changelog.
 
-[Unreleased]: https://github.com/prohand/gladys-homekitcontroller/compare/v1.0.4...HEAD
+[Unreleased]: https://github.com/prohand/gladys-homekitcontroller/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/prohand/gladys-homekitcontroller/compare/v1.0.4...v1.1.0
 [1.0.4]: https://github.com/prohand/gladys-homekitcontroller/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/prohand/gladys-homekitcontroller/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/prohand/gladys-homekitcontroller/compare/v1.0.1...v1.0.2
