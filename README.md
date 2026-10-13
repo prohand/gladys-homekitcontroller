@@ -12,7 +12,8 @@ et du SDK [`@gladysassistant/integration-sdk`](https://github.com/GladysAssistan
 Le protocole HomeKit (HAP) est géré par la librairie
 [`hap-controller`](https://github.com/Apollon77/hap-controller-node).
 
-Documentation utilisateur : [`docs/fr.md`](./docs/fr.md) / [`docs/en.md`](./docs/en.md).
+Documentation utilisateur : [`docs/fr.md`](./docs/fr.md) / [`docs/en.md`](./docs/en.md) /
+[`docs/de.md`](./docs/de.md) / [`docs/es.md`](./docs/es.md).
 
 ## Fonctionnement
 
@@ -63,7 +64,7 @@ la radio), pas de caméras ni de télévisions pour l'instant.
 │     ├─ index.js                    # services HomeKit -> fonctionnalités Gladys
 │     └─ color.js                    # conversions teinte/saturation <-> RGB
 ├─ test/                             # tests unitaires (node --test)
-├─ docs/{fr,en}.md                   # documentation utilisateur (ré-hébergée par Gladys)
+├─ docs/{fr,en,de,es}.md             # documentation utilisateur (ré-hébergée par Gladys)
 ├─ gladys-assistant-integration.json # manifest
 ├─ Dockerfile                        # Node 24 Alpine, rootfs en lecture seule
 └─ cover.png                         # couverture du catalogue (800×534)

@@ -11,6 +11,16 @@ la section de la nouvelle version et les publie dans la Release GitHub.
 
 ## [Unreleased]
 
+### Ajouté
+
+- Traductions allemande et espagnole (écran de configuration, messages,
+  widgets, documentation).
+
+### Corrigé
+
+- La documentation anglaise nomme les écrans de Gladys comme le fait l'interface
+  de Gladys.
+
 ## [1.0.4] - 2026-10-12
 
 ### Modifié

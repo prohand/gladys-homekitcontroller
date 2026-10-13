@@ -28,7 +28,8 @@ locally, **without an iPhone, Apple TV or HomePod**, and without any cloud.
      `192.168.1.20:51826`);
    - **Setup code**: the 8 digits, with or without dashes.
 4. Pairing takes a few seconds (up to a minute on small modules). Then open
-   the **Discovery** tab: the accessory's devices are ready to be added.
+   the **Discover** tab: the accessory's devices are ready to be added with
+   **Add to Gladys**.
 
 A HomeKit **bridge** gives one Gladys device per bridged accessory.
 
@@ -72,7 +73,7 @@ Other services (cameras, televisions…) are ignored for now.
 
 ## Scenes
 
-Triggers ("When…"):
+Triggers (in a scene, **Add trigger → Integrations**):
 
 - **HomeKit button pressed**: a button or a doorbell was pressed. Optional
   filters: the device, the press type (single, double, long) and the button
@@ -86,7 +87,7 @@ To pick a button in the "Device" filter, the accessory must have created a
 device in Gladys (for example through its battery). Otherwise, leave the
 filter empty.
 
-Actions ("Then…"):
+Actions (in a scene, **New action → Integrations**):
 
 - **Identify a HomeKit device**: the accessory signals itself.
 - **Re-read a HomeKit device**: reads all its values right away (handy
@@ -104,10 +105,10 @@ is offline, a **Reconnect** button.
   and on the same network (same VLAN) as Gladys. Try a longer search
   duration, or pair it with `IP:port`.
 - **"paired elsewhere"**: remove it from the Home app or factory-reset it.
-- **Unreachable accessory**: the Configuration screen shows which
+- **Unreachable accessory**: the integration's **Configuration** tab shows which
   accessories are offline. The integration retries on its own and finds the
   accessory again if its IP address changed. To avoid it, give the
   accessory a fixed IP address (DHCP reservation).
 - Pairings are stored in the integration's `/data` volume: they are kept
   across updates.
-- For details, check the integration logs (`LOG_LEVEL=debug`).
+- For details, check the integration's **Logs** tab (`LOG_LEVEL=debug`).

@@ -4,7 +4,9 @@
   "name": "HomeKit Controller",
   "description": {
     "en": "Pair and control your HomeKit Wi-Fi/Ethernet accessories from Gladys, no Apple hub needed.",
-    "fr": "Appairez et pilotez vos accessoires HomeKit Wi-Fi/Ethernet depuis Gladys, sans hub Apple."
+    "fr": "Appairez et pilotez vos accessoires HomeKit Wi-Fi/Ethernet depuis Gladys, sans hub Apple.",
+    "de": "Kopple und steuere dein HomeKit-WLAN-/Ethernet-Zubehör mit Gladys, ohne Apple-Hub.",
+    "es": "Empareje y controle sus accesorios HomeKit Wi-Fi/Ethernet desde Gladys, sin hub de Apple."
   },
   "version": "1.0.4",
   "docker_image": "ghcr.io/prohand/gladys-homekitcontroller:1.0.4",
@@ -24,18 +26,24 @@
       "type": "section",
       "label": {
         "en": "Getting started",
-        "fr": "Pour commencer"
+        "fr": "Pour commencer",
+        "de": "Erste Schritte",
+        "es": "Primeros pasos"
       },
       "description": {
-        "en": "1. Remove the accessory from Apple Home (a HomeKit accessory accepts only one controller). 2. Click \"Search for accessories\" below. 3. Click \"Pair an accessory\" with its name and the 8-digit setup code printed on it. 4. Add its devices from the Discovery tab.",
-        "fr": "1. Retirez l'accessoire de l'app Maison d'Apple (un accessoire HomeKit n'accepte qu'un seul contrôleur). 2. Cliquez sur « Rechercher les accessoires » ci-dessous. 3. Cliquez sur « Appairer un accessoire » avec son nom et le code à 8 chiffres imprimé dessus. 4. Ajoutez ses appareils depuis l'onglet Découverte."
+        "en": "1. Remove the accessory from Apple Home (a HomeKit accessory accepts only one controller). 2. Click \"Search for accessories\" below. 3. Click \"Pair an accessory\" with its name and the 8-digit setup code printed on it. 4. Add its devices from the Discover tab.",
+        "fr": "1. Retirez l'accessoire de l'app Maison d'Apple (un accessoire HomeKit n'accepte qu'un seul contrôleur). 2. Cliquez sur « Rechercher les accessoires » ci-dessous. 3. Cliquez sur « Appairer un accessoire » avec son nom et le code à 8 chiffres imprimé dessus. 4. Ajoutez ses appareils depuis l'onglet Découverte.",
+        "de": "1. Entferne das Zubehör aus der Home-App von Apple (ein HomeKit-Zubehör akzeptiert nur einen Controller). 2. Klicke unten auf „Zubehör suchen“. 3. Klicke auf „Zubehör koppeln“ und gib seinen Namen und den darauf aufgedruckten 8-stelligen Setup-Code ein. 4. Füge seine Geräte über die Registerkarte „Entdecken“ hinzu.",
+        "es": "1. Elimine el accesorio de la app Casa de Apple (un accesorio HomeKit solo acepta un controlador). 2. Pulse «Buscar accesorios» más abajo. 3. Pulse «Emparejar un accesorio» con su nombre y el código de configuración de 8 cifras impreso en él. 4. Añada sus dispositivos desde la pestaña «Descubrir»."
       },
       "links": [
         {
           "url": "https://github.com/prohand/gladys-homekitcontroller",
           "label": {
             "en": "Integration page",
-            "fr": "Page de l'intégration"
+            "fr": "Page de l'intégration",
+            "de": "Seite der Integration",
+            "es": "Página de la integración"
           }
         }
       ]
@@ -45,11 +53,15 @@
       "type": "number",
       "label": {
         "en": "Refresh interval (s)",
-        "fr": "Intervalle de rafraîchissement (s)"
+        "fr": "Intervalle de rafraîchissement (s)",
+        "de": "Aktualisierungsintervall (s)",
+        "es": "Intervalo de actualización (s)"
       },
       "description": {
         "en": "HomeKit pushes changes in real time; this full refresh is only a safety net.",
-        "fr": "HomeKit envoie les changements en temps réel ; ce rafraîchissement complet n'est qu'une sécurité."
+        "fr": "HomeKit envoie les changements en temps réel ; ce rafraîchissement complet n'est qu'une sécurité.",
+        "de": "HomeKit überträgt Änderungen in Echtzeit; diese vollständige Aktualisierung ist nur eine Absicherung.",
+        "es": "HomeKit envía los cambios en tiempo real; esta actualización completa es solo una red de seguridad."
       },
       "required": false,
       "default": 60,
@@ -61,11 +73,15 @@
       "type": "number",
       "label": {
         "en": "Search duration (s)",
-        "fr": "Durée de recherche (s)"
+        "fr": "Durée de recherche (s)",
+        "de": "Suchdauer (s)",
+        "es": "Duración de la búsqueda (s)"
       },
       "description": {
         "en": "How long Gladys listens for HomeKit accessories on the network.",
-        "fr": "Durée pendant laquelle Gladys écoute les accessoires HomeKit sur le réseau."
+        "fr": "Durée pendant laquelle Gladys écoute les accessoires HomeKit sur le réseau.",
+        "de": "Wie lange Gladys im Netzwerk nach HomeKit-Zubehör sucht.",
+        "es": "Tiempo durante el que Gladys escucha los accesorios HomeKit en la red."
       },
       "required": false,
       "default": 10,
@@ -78,7 +94,9 @@
       "key": "list_accessories",
       "label": {
         "en": "Search for accessories",
-        "fr": "Rechercher les accessoires"
+        "fr": "Rechercher les accessoires",
+        "de": "Zubehör suchen",
+        "es": "Buscar accesorios"
       },
       "timeout_seconds": 45
     },
@@ -86,7 +104,9 @@
       "key": "pair",
       "label": {
         "en": "Pair an accessory",
-        "fr": "Appairer un accessoire"
+        "fr": "Appairer un accessoire",
+        "de": "Zubehör koppeln",
+        "es": "Emparejar un accesorio"
       },
       "timeout_seconds": 120,
       "fields": [
@@ -95,11 +115,15 @@
           "type": "string",
           "label": {
             "en": "Accessory",
-            "fr": "Accessoire"
+            "fr": "Accessoire",
+            "de": "Zubehör",
+            "es": "Accesorio"
           },
           "description": {
             "en": "Name, HomeKit ID or IP address shown by the search, or IP:port.",
-            "fr": "Nom, identifiant HomeKit ou adresse IP affichés par la recherche, ou IP:port."
+            "fr": "Nom, identifiant HomeKit ou adresse IP affichés par la recherche, ou IP:port.",
+            "de": "Von der Suche angezeigter Name, HomeKit-ID oder IP-Adresse, oder IP:port.",
+            "es": "Nombre, ID de HomeKit o dirección IP mostrados por la búsqueda, o IP:port."
           },
           "required": true
         },
@@ -108,11 +132,15 @@
           "type": "string",
           "label": {
             "en": "Setup code",
-            "fr": "Code de configuration"
+            "fr": "Code de configuration",
+            "de": "Setup-Code",
+            "es": "Código de configuración"
           },
           "placeholder": {
             "en": "123-45-678",
-            "fr": "123-45-678"
+            "fr": "123-45-678",
+            "de": "123-45-678",
+            "es": "123-45-678"
           },
           "required": true
         }
@@ -122,7 +150,9 @@
       "key": "identify",
       "label": {
         "en": "Identify a device",
-        "fr": "Identifier un appareil"
+        "fr": "Identifier un appareil",
+        "de": "Gerät identifizieren",
+        "es": "Identificar un dispositivo"
       },
       "timeout_seconds": 30,
       "fields": [
@@ -132,7 +162,9 @@
           "source": "devices",
           "label": {
             "en": "Device",
-            "fr": "Appareil"
+            "fr": "Appareil",
+            "de": "Gerät",
+            "es": "Dispositivo"
           },
           "required": true
         }
@@ -142,7 +174,9 @@
       "key": "unpair",
       "label": {
         "en": "Unpair an accessory",
-        "fr": "Désappairer un accessoire"
+        "fr": "Désappairer un accessoire",
+        "de": "Zubehör entkoppeln",
+        "es": "Desemparejar un accesorio"
       },
       "timeout_seconds": 30,
       "fields": [
@@ -152,11 +186,15 @@
           "source": "devices",
           "label": {
             "en": "Device",
-            "fr": "Appareil"
+            "fr": "Appareil",
+            "de": "Gerät",
+            "es": "Dispositivo"
           },
           "description": {
             "en": "The whole accessory is unpaired (every device of a bridge).",
-            "fr": "Tout l'accessoire est désappairé (tous les appareils d'un pont)."
+            "fr": "Tout l'accessoire est désappairé (tous les appareils d'un pont).",
+            "de": "Das gesamte Zubehör wird entkoppelt (alle Geräte einer Bridge).",
+            "es": "Se desempareja todo el accesorio (todos los dispositivos de un puente)."
           },
           "required": true
         }
@@ -168,11 +206,15 @@
       "key": "button_pressed",
       "label": {
         "en": "HomeKit button pressed",
-        "fr": "Bouton HomeKit appuyé"
+        "fr": "Bouton HomeKit appuyé",
+        "de": "HomeKit-Taste gedrückt",
+        "es": "Botón HomeKit pulsado"
       },
       "description": {
         "en": "A HomeKit button or doorbell was pressed.",
-        "fr": "Un bouton ou une sonnette HomeKit a été appuyé."
+        "fr": "Un bouton ou une sonnette HomeKit a été appuyé.",
+        "de": "Eine HomeKit-Taste oder -Türklingel wurde gedrückt.",
+        "es": "Se ha pulsado un botón o un timbre HomeKit."
       },
       "fields": [
         {
@@ -181,11 +223,15 @@
           "source": "devices",
           "label": {
             "en": "Device",
-            "fr": "Appareil"
+            "fr": "Appareil",
+            "de": "Gerät",
+            "es": "Dispositivo"
           },
           "description": {
             "en": "Leave empty for any button.",
-            "fr": "Laisser vide pour n'importe quel bouton."
+            "fr": "Laisser vide pour n'importe quel bouton.",
+            "de": "Leer lassen für jede Taste.",
+            "es": "Déjelo vacío para cualquier botón."
           },
           "required": false
         },
@@ -194,32 +240,42 @@
           "type": "multi_select",
           "label": {
             "en": "Press",
-            "fr": "Appui"
+            "fr": "Appui",
+            "de": "Tastendruck",
+            "es": "Pulsación"
           },
           "description": {
             "en": "Leave empty for any press.",
-            "fr": "Laisser vide pour n'importe quel appui."
+            "fr": "Laisser vide pour n'importe quel appui.",
+            "de": "Leer lassen für jeden Tastendruck.",
+            "es": "Déjelo vacío para cualquier pulsación."
           },
           "options": [
             {
               "value": "single",
               "label": {
                 "en": "Single press",
-                "fr": "Appui simple"
+                "fr": "Appui simple",
+                "de": "Einfacher Druck",
+                "es": "Pulsación simple"
               }
             },
             {
               "value": "double",
               "label": {
                 "en": "Double press",
-                "fr": "Double appui"
+                "fr": "Double appui",
+                "de": "Doppelter Druck",
+                "es": "Doble pulsación"
               }
             },
             {
               "value": "long",
               "label": {
                 "en": "Long press",
-                "fr": "Appui long"
+                "fr": "Appui long",
+                "de": "Langer Druck",
+                "es": "Pulsación larga"
               }
             }
           ],
@@ -230,11 +286,15 @@
           "type": "number",
           "label": {
             "en": "Button number",
-            "fr": "Numéro du bouton"
+            "fr": "Numéro du bouton",
+            "de": "Tastennummer",
+            "es": "Número del botón"
           },
           "description": {
             "en": "For an accessory with several buttons. Leave empty for any.",
-            "fr": "Pour un accessoire à plusieurs boutons. Laisser vide pour tous."
+            "fr": "Pour un accessoire à plusieurs boutons. Laisser vide pour tous.",
+            "de": "Für Zubehör mit mehreren Tasten. Leer lassen für alle.",
+            "es": "Para un accesorio con varios botones. Déjelo vacío para cualquiera."
           },
           "min": 1,
           "max": 99,
@@ -247,7 +307,9 @@
           "type": "string",
           "label": {
             "en": "Accessory",
-            "fr": "Accessoire"
+            "fr": "Accessoire",
+            "de": "Zubehör",
+            "es": "Accesorio"
           }
         },
         {
@@ -255,7 +317,9 @@
           "type": "string",
           "label": {
             "en": "Button",
-            "fr": "Bouton"
+            "fr": "Bouton",
+            "de": "Taste",
+            "es": "Botón"
           }
         },
         {
@@ -263,7 +327,9 @@
           "type": "number",
           "label": {
             "en": "Button number",
-            "fr": "Numéro du bouton"
+            "fr": "Numéro du bouton",
+            "de": "Tastennummer",
+            "es": "Número del botón"
           }
         },
         {
@@ -271,7 +337,9 @@
           "type": "string",
           "label": {
             "en": "Press (single, double, long)",
-            "fr": "Appui (single, double, long)"
+            "fr": "Appui (single, double, long)",
+            "de": "Tastendruck (single, double, long)",
+            "es": "Pulsación (single, double, long)"
           }
         },
         {
@@ -279,7 +347,9 @@
           "type": "boolean",
           "label": {
             "en": "Doorbell",
-            "fr": "Sonnette"
+            "fr": "Sonnette",
+            "de": "Türklingel",
+            "es": "Timbre"
           }
         }
       ]
@@ -288,11 +358,15 @@
       "key": "accessory_status",
       "label": {
         "en": "HomeKit accessory offline / back",
-        "fr": "Accessoire HomeKit perdu / revenu"
+        "fr": "Accessoire HomeKit perdu / revenu",
+        "de": "HomeKit-Zubehör offline / zurück",
+        "es": "Accesorio HomeKit desconectado / de vuelta"
       },
       "description": {
         "en": "A HomeKit accessory became unreachable or came back.",
-        "fr": "Un accessoire HomeKit est devenu injoignable ou est revenu."
+        "fr": "Un accessoire HomeKit est devenu injoignable ou est revenu.",
+        "de": "Ein HomeKit-Zubehör ist nicht mehr erreichbar oder wieder da.",
+        "es": "Un accesorio HomeKit ha dejado de estar accesible o ha vuelto."
       },
       "fields": [
         {
@@ -301,11 +375,15 @@
           "source": "devices",
           "label": {
             "en": "Device",
-            "fr": "Appareil"
+            "fr": "Appareil",
+            "de": "Gerät",
+            "es": "Dispositivo"
           },
           "description": {
             "en": "Leave empty for any accessory.",
-            "fr": "Laisser vide pour n'importe quel accessoire."
+            "fr": "Laisser vide pour n'importe quel accessoire.",
+            "de": "Leer lassen für jedes Zubehör.",
+            "es": "Déjelo vacío para cualquier accesorio."
           },
           "required": false
         },
@@ -314,21 +392,27 @@
           "type": "select",
           "label": {
             "en": "Status",
-            "fr": "État"
+            "fr": "État",
+            "de": "Status",
+            "es": "Estado"
           },
           "options": [
             {
               "value": "offline",
               "label": {
                 "en": "Offline",
-                "fr": "Hors ligne"
+                "fr": "Hors ligne",
+                "de": "Offline",
+                "es": "Desconectado"
               }
             },
             {
               "value": "online",
               "label": {
                 "en": "Back online",
-                "fr": "De retour"
+                "fr": "De retour",
+                "de": "Wieder online",
+                "es": "De nuevo en línea"
               }
             }
           ],
@@ -341,7 +425,9 @@
           "type": "string",
           "label": {
             "en": "Accessory",
-            "fr": "Accessoire"
+            "fr": "Accessoire",
+            "de": "Zubehör",
+            "es": "Accesorio"
           }
         },
         {
@@ -349,7 +435,9 @@
           "type": "string",
           "label": {
             "en": "Status (offline, online)",
-            "fr": "État (offline, online)"
+            "fr": "État (offline, online)",
+            "de": "Status (offline, online)",
+            "es": "Estado (offline, online)"
           }
         }
       ]
@@ -360,11 +448,15 @@
       "key": "identify",
       "label": {
         "en": "Identify a HomeKit device",
-        "fr": "Identifier un appareil HomeKit"
+        "fr": "Identifier un appareil HomeKit",
+        "de": "HomeKit-Gerät identifizieren",
+        "es": "Identificar un dispositivo HomeKit"
       },
       "description": {
         "en": "The accessory signals itself (blinks, beeps…).",
-        "fr": "L'accessoire se signale (clignote, émet un son…)."
+        "fr": "L'accessoire se signale (clignote, émet un son…).",
+        "de": "Das Zubehör macht sich bemerkbar (blinkt, piept…).",
+        "es": "El accesorio se hace notar (parpadea, emite un pitido…)."
       },
       "timeout_seconds": 20,
       "fields": [
@@ -374,7 +466,9 @@
           "source": "devices",
           "label": {
             "en": "Device",
-            "fr": "Appareil"
+            "fr": "Appareil",
+            "de": "Gerät",
+            "es": "Dispositivo"
           },
           "required": true
         }
@@ -384,11 +478,15 @@
       "key": "refresh",
       "label": {
         "en": "Re-read a HomeKit device",
-        "fr": "Relire un appareil HomeKit"
+        "fr": "Relire un appareil HomeKit",
+        "de": "HomeKit-Gerät neu einlesen",
+        "es": "Releer un dispositivo HomeKit"
       },
       "description": {
         "en": "Read every value of the accessory now.",
-        "fr": "Relit tout de suite toutes les valeurs de l'accessoire."
+        "fr": "Relit tout de suite toutes les valeurs de l'accessoire.",
+        "de": "Liest sofort alle Werte des Zubehörs.",
+        "es": "Lee ahora mismo todos los valores del accesorio."
       },
       "timeout_seconds": 30,
       "fields": [
@@ -398,7 +496,9 @@
           "source": "devices",
           "label": {
             "en": "Device",
-            "fr": "Appareil"
+            "fr": "Appareil",
+            "de": "Gerät",
+            "es": "Dispositivo"
           },
           "required": true
         }
@@ -410,11 +510,15 @@
       "key": "accessories",
       "label": {
         "en": "HomeKit accessories",
-        "fr": "Accessoires HomeKit"
+        "fr": "Accessoires HomeKit",
+        "de": "HomeKit-Zubehör",
+        "es": "Accesorios HomeKit"
       },
       "description": {
         "en": "Online / offline paired accessories, with a reconnect button.",
-        "fr": "Accessoires appairés en ligne / hors ligne, avec un bouton pour reconnecter."
+        "fr": "Accessoires appairés en ligne / hors ligne, avec un bouton pour reconnecter.",
+        "de": "Gekoppeltes Zubehör online / offline, mit einer Schaltfläche zum Neuverbinden.",
+        "es": "Accesorios emparejados en línea / desconectados, con un botón para reconectar."
       },
       "icon": "home",
       "action_timeout_seconds": 45

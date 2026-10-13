@@ -63,12 +63,15 @@ Avant chaque commit : `npm run format:check && npm run lint && npm test`.
 - **Toute requête vers un accessoire passe par `withTimeout`** : un socket TCP
   vers un accessoire débranché peut sinon bloquer plusieurs minutes.
 - **Manifest** (`gladys-assistant-integration.json`) : `description` ≤ 100
-  caractères par langue, textes multilingues en objet `{ en, fr }` (y compris
+  caractères par langue, textes multilingues en objet `{ en, fr, de, es }` (y compris
   `placeholder`), `default` identiques à `DEFAULT_CONFIG` (`src/config.js`),
   chaque action doit avoir un `gladys.onAction` dans `index.js`. Les tests
   `test/manifest.test.js` et le job « Store admission checks » de la CI (sur les PR) le vérifient.
-- **Docs utilisateur** `docs/fr.md` et `docs/en.md` obligatoires (store) : les
-  mettre à jour quand le comportement visible change.
+- **Textes affichés à l'utilisateur** (messages d'action, statut de connexion,
+  widget) : objets `{ en, fr, de, es }`.
+- **Docs utilisateur** `docs/fr.md` et `docs/en.md` obligatoires (store),
+  `docs/de.md` et `docs/es.md` en plus : les quatre restent synchronisées et
+  sont mises à jour quand le comportement visible change.
 - Commentaires de code en anglais, style du code existant (ESM, Prettier).
 
 ## Changelog et versions

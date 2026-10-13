@@ -253,6 +253,8 @@ test('listAccessories describes what the network scan found', async (t) => {
   assert.match(message.en, /^2 accessory\(ies\)/);
   assert.match(message.en, /Acme Bridge 1A2B \(Bridge\) - 1A:2B:3C:4D:5E:6F .* paired with Gladys/);
   assert.match(message.fr, /Eve Energy \(Outlet\) .* prêt à appairer/);
+  assert.match(message.de, /^2 Zubehörteil\(e\): .* mit Gladys gekoppelt .* bereit zum Koppeln/);
+  assert.match(message.es, /^2 accesorio\(s\): .* emparejado con Gladys .* listo para emparejar/);
 });
 
 test('a Gladys API failure does not mark the accessory offline', async (t) => {
@@ -326,9 +328,26 @@ test('losing and getting back an accessory fires the status trigger', async (t) 
 
   const message = await controller.reconnectOffline();
   assert.equal(message.fr, '1/1 accessoire(s) reconnecté(s)');
+  assert.equal(message.de, '1/1 Zubehörteil(e) wieder verbunden');
+  assert.equal(message.es, '1/1 accesorio(s) reconectado(s)');
   const online = gladys.sceneEvents.filter((e) => e.data.status === 'online');
   assert.equal(online.length, 3);
 });
+
+// Every multi-language text of a widget content speaks the four Gladys UI languages.
+function assertTranslated(content) {
+  const visit = (node) => {
+    if (!node || typeof node !== 'object') return;
+    if (typeof node.en === 'string') {
+      for (const lang of ['en', 'fr', 'de', 'es']) {
+        assert.ok(node[lang], `missing "${lang}" in ${JSON.stringify(node)}`);
+      }
+      return;
+    }
+    Object.values(node).forEach(visit);
+  };
+  visit(content);
+}
 
 test('the accessories widget fits the core vocabulary', async (t) => {
   const { controller } = await startController(t);
@@ -342,6 +361,8 @@ test('the accessories widget fits the core vocabulary', async (t) => {
   assert.deepEqual(validateWidgetContent(offline), []);
   assert.equal(offline.components[1].value, 1);
   assert.deepEqual(offline.components.at(-1).action, { key: 'reconnect' });
+  assertTranslated(online);
+  assertTranslated(offline);
 });
 
 test('the accessories widget has an empty state', async (t) => {
@@ -349,4 +370,5 @@ test('the accessories widget has an empty state', async (t) => {
   const content = controller.buildAccessoriesWidget();
   assert.deepEqual(validateWidgetContent(content), []);
   assert.equal(content.components[0].type, 'text');
+  assertTranslated(content);
 });

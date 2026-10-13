@@ -16,6 +16,25 @@ const manifest = JSON.parse(
 const indexSource = await readFile(new URL('../index.js', import.meta.url), 'utf8');
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 
+// The four languages of the Gladys interface: every user-facing text carries them all.
+const LANGUAGES = ['en', 'fr', 'de', 'es'];
+
+/** Every multi-language object of the manifest, with its JSON path. */
+function multiLanguageTexts(node, path = '$', found = []) {
+  if (Array.isArray(node)) {
+    node.forEach((item, index) => multiLanguageTexts(item, `${path}[${index}]`, found));
+  } else if (node && typeof node === 'object') {
+    if (typeof node.en === 'string') {
+      found.push({ path, text: node });
+    } else {
+      for (const [key, value] of Object.entries(node)) {
+        multiLanguageTexts(value, `${path}.${key}`, found);
+      }
+    }
+  }
+  return found;
+}
+
 test('every manifest action has a registered handler', () => {
   for (const action of manifest.actions ?? []) {
     assert.ok(
@@ -91,8 +110,9 @@ test('section fields are purely presentational', () => {
     assert.equal(section.default, undefined);
     assert.equal(section.placeholder, undefined);
     assert.ok(section.label?.en);
-    assert.ok(section.description.en.length <= 1000);
-    assert.ok(section.description.fr.length <= 1000);
+    for (const lang of LANGUAGES) {
+      assert.ok(section.description[lang].length <= 1000, `section ${section.key} (${lang})`);
+    }
     assert.ok(!(section.key in DEFAULT_CONFIG));
     for (const link of section.links ?? []) {
       assert.match(link.url, /^https:\/\//, 'section links must be https');
@@ -110,5 +130,32 @@ test('dynamic selects declare a source and no static options', () => {
   for (const field of allFields.filter((f) => f.source !== undefined)) {
     assert.equal(field.source, 'devices');
     assert.equal(field.options, undefined);
+  }
+});
+
+test('every user-facing text is translated in en, fr, de and es', () => {
+  const texts = multiLanguageTexts(manifest);
+  assert.ok(texts.length > 0);
+  for (const { path, text } of texts) {
+    assert.deepEqual(Object.keys(text).sort(), [...LANGUAGES].sort(), `${path} languages`);
+    for (const lang of LANGUAGES) {
+      assert.equal(typeof text[lang], 'string', `${path}.${lang}`);
+      assert.ok(text[lang].trim().length > 0, `${path}.${lang} is empty`);
+    }
+  }
+});
+
+test('texts respect the store length limits in every language', () => {
+  for (const lang of LANGUAGES) {
+    const length = manifest.description[lang].length;
+    assert.ok(length >= 10 && length <= 100, `catalog description (${lang}): ${length}`);
+    for (const widget of manifest.widgets ?? []) {
+      const label = widget.label[lang].length;
+      assert.ok(label >= 3 && label <= 30, `widget ${widget.key} label (${lang}): ${label}`);
+      assert.ok(
+        widget.description[lang].length <= 100,
+        `widget ${widget.key} description (${lang})`,
+      );
+    }
   }
 });

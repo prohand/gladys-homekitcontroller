@@ -8,6 +8,9 @@ import { WIDGET_COLORS } from '@gladysassistant/integration-sdk';
 
 const MAX_STATUS_ITEMS = 10;
 
+const ONLINE = { en: 'Online', fr: 'En ligne', de: 'Online', es: 'En línea' };
+const OFFLINE = { en: 'Offline', fr: 'Hors ligne', de: 'Offline', es: 'Desconectado' };
+
 /**
  * Content of the `accessories` widget: how many paired accessories are
  * reachable, the list of them (unreachable first) and a reconnect button.
@@ -21,8 +24,10 @@ export function accessoriesWidget(accessories) {
         {
           type: 'text',
           text: {
-            en: 'No paired HomeKit accessory yet: pair one from the Configuration screen of the integration.',
+            en: 'No paired HomeKit accessory yet: pair one from the Configuration tab of the integration.',
             fr: "Aucun accessoire HomeKit appairé : appairez-en un depuis l'écran Configuration de l'intégration.",
+            de: 'Noch kein HomeKit-Zubehör gekoppelt: Kopple eines in der Registerkarte „Konfiguration“ der Integration.',
+            es: 'Aún no hay ningún accesorio HomeKit emparejado: empareje uno desde la pestaña «Configuración» de la integración.',
           },
         },
       ],
@@ -36,14 +41,14 @@ export function accessoriesWidget(accessories) {
     {
       type: 'value',
       value: accessories.length - offline.length,
-      label: { en: 'Online', fr: 'En ligne' },
+      label: ONLINE,
       icon: 'wifi',
       color: WIDGET_COLORS.SUCCESS,
     },
     {
       type: 'value',
       value: offline.length,
-      label: { en: 'Offline', fr: 'Hors ligne' },
+      label: OFFLINE,
       icon: 'wifi-off',
       color: offline.length > 0 ? WIDGET_COLORS.DANGER : WIDGET_COLORS.NEUTRAL,
     },
@@ -51,7 +56,7 @@ export function accessoriesWidget(accessories) {
       type: 'status',
       items: sorted.slice(0, MAX_STATUS_ITEMS).map((a) => ({
         label: a.name.slice(0, 40),
-        value: a.online ? { en: 'Online', fr: 'En ligne' } : { en: 'Offline', fr: 'Hors ligne' },
+        value: a.online ? ONLINE : OFFLINE,
         color: a.online ? WIDGET_COLORS.SUCCESS : WIDGET_COLORS.DANGER,
       })),
     },
@@ -61,13 +66,18 @@ export function accessoriesWidget(accessories) {
     components.push({
       type: 'text',
       variant: 'caption',
-      text: { en: `+${more} more accessory(ies)`, fr: `+${more} autre(s) accessoire(s)` },
+      text: {
+        en: `+${more} more accessory(ies)`,
+        fr: `+${more} autre(s) accessoire(s)`,
+        de: `+${more} weitere(s) Zubehörteil(e)`,
+        es: `+${more} accesorio(s) más`,
+      },
     });
   }
   if (offline.length > 0) {
     components.push({
       type: 'button',
-      label: { en: 'Reconnect', fr: 'Reconnecter' },
+      label: { en: 'Reconnect', fr: 'Reconnecter', de: 'Neu verbinden', es: 'Reconectar' },
       icon: 'refresh-cw',
       style: 'secondary',
       action: { key: 'reconnect' },
