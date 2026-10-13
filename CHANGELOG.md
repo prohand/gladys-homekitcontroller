@@ -11,6 +11,11 @@ la section de la nouvelle version et les publie dans la Release GitHub.
 
 ## [Unreleased]
 
+### Ajouté
+
+- Traductions allemande et espagnole (écran de configuration, messages,
+  widgets, documentation).
+
 ## [1.0.4] - 2026-10-12
 
 ### Modifié

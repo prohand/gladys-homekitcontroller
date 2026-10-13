@@ -48,6 +48,28 @@ const AUTO_SCAN_INTERVAL_MS = 120_000;
 // Characteristics read per request during a refresh.
 const READ_CHUNK_SIZE = 50;
 
+// Pairing status shown by the "Search for accessories" action, per language.
+const PAIRING_STATUS = {
+  gladys: {
+    en: 'paired with Gladys',
+    fr: 'appairé à Gladys',
+    de: 'mit Gladys gekoppelt',
+    es: 'emparejado con Gladys',
+  },
+  elsewhere: {
+    en: 'paired elsewhere',
+    fr: 'déjà appairé ailleurs',
+    de: 'anderweitig gekoppelt',
+    es: 'emparejado en otro sitio',
+  },
+  ready: {
+    en: 'ready to pair',
+    fr: 'prêt à appairer',
+    de: 'bereit zum Koppeln',
+    es: 'listo para emparejar',
+  },
+};
+
 const charKey = (aid, iid) => `${Number(aid)}.${Number(iid)}`;
 
 function chunk(list, size) {
@@ -688,12 +710,14 @@ export class HomeKitController {
       return {
         en: 'No HomeKit accessory found. Check that it is powered on, on the same network as Gladys, and not paired with another controller.',
         fr: "Aucun accessoire HomeKit trouvé. Vérifiez qu'il est allumé, sur le même réseau que Gladys, et non appairé à un autre contrôleur.",
+        de: 'Kein HomeKit-Zubehör gefunden. Prüfen Sie, ob es eingeschaltet ist, sich im selben Netzwerk wie Gladys befindet und nicht mit einem anderen Controller gekoppelt ist.',
+        es: 'No se ha encontrado ningún accesorio HomeKit. Asegúrese de que está encendido, en la misma red que Gladys y no emparejado con otro controlador.',
       };
     }
     const status = (a, lang) => {
-      if (this.store.get(a.id)) return lang === 'fr' ? 'appairé à Gladys' : 'paired with Gladys';
-      if (a.paired) return lang === 'fr' ? 'déjà appairé ailleurs' : 'paired elsewhere';
-      return lang === 'fr' ? 'prêt à appairer' : 'ready to pair';
+      if (this.store.get(a.id)) return PAIRING_STATUS.gladys[lang];
+      if (a.paired) return PAIRING_STATUS.elsewhere[lang];
+      return PAIRING_STATUS.ready[lang];
     };
     const lines = (lang) =>
       accessories
@@ -704,6 +728,8 @@ export class HomeKitController {
     return {
       en: `${accessories.length} accessory(ies): ${lines('en')}${more}`,
       fr: `${accessories.length} accessoire(s) : ${lines('fr')}${more}`,
+      de: `${accessories.length} Zubehörteil(e): ${lines('de')}${more}`,
+      es: `${accessories.length} accesorio(s): ${lines('es')}${more}`,
     };
   }
 
@@ -777,6 +803,8 @@ export class HomeKitController {
     return {
       en: `${name} paired: ${count} device(s) are waiting in the Discovery tab.`,
       fr: `${name} appairé : ${count} appareil(s) vous attendent dans l'onglet Découverte.`,
+      de: `${name} gekoppelt: ${count} Gerät(e) warten in der Registerkarte „Entdecken“ auf Sie.`,
+      es: `${name} emparejado: ${count} dispositivo(s) le esperan en la pestaña «Descubrir».`,
     };
   }
 
@@ -807,11 +835,15 @@ export class HomeKitController {
       return {
         en: `${record.name} unpaired. You can now delete its devices from Gladys.`,
         fr: `${record.name} désappairé. Vous pouvez maintenant supprimer ses appareils dans Gladys.`,
+        de: `${record.name} entkoppelt. Sie können seine Geräte jetzt in Gladys löschen.`,
+        es: `${record.name} desemparejado. Ahora puede eliminar sus dispositivos en Gladys.`,
       };
     }
     return {
       en: `${record.name} removed from Gladys, but the accessory could not be reached: reset it before pairing it again.`,
       fr: `${record.name} retiré de Gladys, mais l'accessoire était injoignable : réinitialisez-le avant de l'appairer à nouveau.`,
+      de: `${record.name} aus Gladys entfernt, aber das Zubehör war nicht erreichbar: Setzen Sie es zurück, bevor Sie es erneut koppeln.`,
+      es: `${record.name} eliminado de Gladys, pero el accesorio no estaba accesible: restablézcalo antes de volver a emparejarlo.`,
     };
   }
 
@@ -841,6 +873,8 @@ export class HomeKitController {
       return {
         en: 'This accessory has no way to signal itself.',
         fr: 'Cet accessoire ne peut pas se signaler.',
+        de: 'Dieses Zubehör kann sich nicht bemerkbar machen.',
+        es: 'Este accesorio no puede hacerse notar.',
       };
     }
     this.requireOnline(state, record);
@@ -852,6 +886,8 @@ export class HomeKitController {
     return {
       en: `Look around: ${device.name} is signalling itself.`,
       fr: `Regardez autour de vous : ${device.name} se signale.`,
+      de: `Sehen Sie sich um: ${device.name} macht sich bemerkbar.`,
+      es: `Mire a su alrededor: ${device.name} se está haciendo notar.`,
     };
   }
 
@@ -918,6 +954,8 @@ export class HomeKitController {
     return {
       en: `${offline.length - still}/${offline.length} accessory(ies) reconnected`,
       fr: `${offline.length - still}/${offline.length} accessoire(s) reconnecté(s)`,
+      de: `${offline.length - still}/${offline.length} Zubehörteil(e) wieder verbunden`,
+      es: `${offline.length - still}/${offline.length} accesorio(s) reconectado(s)`,
     };
   }
 
@@ -937,6 +975,8 @@ export class HomeKitController {
             message: {
               en: `${ratio} HomeKit accessory(ies) unreachable: ${names}`.slice(0, 200),
               fr: `${ratio} accessoire(s) HomeKit injoignable(s) : ${names}`.slice(0, 200),
+              de: `${ratio} HomeKit-Zubehörteil(e) nicht erreichbar: ${names}`.slice(0, 200),
+              es: `${ratio} accesorio(s) HomeKit inaccesible(s): ${names}`.slice(0, 200),
             },
           };
     const signature = JSON.stringify(status);

@@ -1,0 +1,118 @@
+# HomeKit Controller
+
+Esta integración convierte Gladys en un **controlador HomeKit**: se empareja
+directamente con sus accesorios HomeKit Wi-Fi / Ethernet y los controla en
+local, **sin iPhone, Apple TV ni HomePod**, y sin ninguna nube.
+
+## Antes de empezar
+
+- Un accesorio HomeKit solo acepta **un controlador** a la vez. Si ya está
+  en la app **Casa** de Apple (o en Home Assistant…), elimínelo allí
+  primero. Si no, restablezca el accesorio a los valores de fábrica.
+- Tenga a mano el **código de configuración de 8 cifras** (`123-45-678`):
+  está impreso en el accesorio, en su caja o en su manual.
+- El accesorio debe estar en la **misma red local** que Gladys.
+- Solo se admiten accesorios **IP** (Wi-Fi, Ethernet). Los accesorios
+  Bluetooth y Thread no.
+- Se requiere **Gladys 5.1.0 o posterior**.
+
+## Emparejar un accesorio
+
+1. Abra la pestaña **Configuración** de la integración.
+2. Pulse **Buscar accesorios**. La lista muestra, para cada accesorio: su
+   nombre, su tipo, su ID de HomeKit, su dirección IP y su estado
+   (`listo para emparejar`, `emparejado en otro sitio`,
+   `emparejado con Gladys`).
+3. Pulse **Emparejar un accesorio** y rellene:
+   - **Accesorio**: el nombre, el ID o la dirección IP mostrados por la
+     búsqueda. Si la búsqueda no lo encuentra, escriba su dirección como
+     `IP:port` (por ejemplo `192.168.1.20:51826`);
+   - **Código de configuración**: las 8 cifras, con o sin guiones.
+4. El emparejamiento tarda unos segundos (hasta un minuto en módulos
+   pequeños). Después abra la pestaña **Descubrir**: los dispositivos del
+   accesorio están listos para añadirse.
+
+Un **puente** HomeKit da un dispositivo de Gladys por cada accesorio
+conectado al puente.
+
+## Dispositivos compatibles
+
+| Servicio HomeKit              | En Gladys                                              |
+| ----------------------------- | ------------------------------------------------------ |
+| Bombilla                      | Encendido/apagado, brillo, color, temperatura de color |
+| Interruptor, enchufe, válvula | Encendido/apagado                                      |
+| Ventilador                    | Encendido/apagado, velocidad                           |
+| Termostato                    | Temperatura, temperatura objetivo, humedad             |
+| Persiana, ventana, puerta     | Posición, abrir / parar / cerrar                       |
+| Cerradura                     | Bloqueada / desbloqueada                               |
+| Sensores                      | Temperatura, humedad, luminosidad, movimiento,         |
+|                               | ocupación, contacto, fuga, humo, CO, CO2,              |
+|                               | partículas PM2.5 / PM10                                |
+| Batería                       | Nivel, batería baja                                    |
+
+Los **botones programables** y los **timbres** no son dispositivos: sus
+pulsaciones activan escenas (ver más abajo).
+
+Los demás servicios (cámaras, televisores…) se ignoran por ahora.
+
+## Ajustes
+
+- **Intervalo de actualización**: HomeKit envía los cambios en tiempo real.
+  Gladys también vuelve a leer todo el accesorio con este intervalo, como
+  red de seguridad (60 s por defecto).
+- **Duración de la búsqueda**: cuánto tiempo se escucha la red durante una
+  búsqueda (10 s por defecto).
+
+## Acciones
+
+- **Buscar accesorios**: enumera los accesorios HomeKit de la red.
+- **Emparejar un accesorio**: ver más arriba.
+- **Identificar un dispositivo**: el accesorio se hace notar (parpadea,
+  emite un pitido…), útil para localizarlo.
+- **Desemparejar un accesorio**: elimina el emparejamiento del accesorio y
+  de Gladys. En un puente, afecta a todos sus dispositivos. Después elimine
+  los dispositivos en Gladys.
+
+## Escenas
+
+Disparadores («Cuando…»):
+
+- **Botón HomeKit pulsado**: se ha pulsado un botón o un timbre. Filtros
+  opcionales: el dispositivo, el tipo de pulsación (simple, doble, larga) y
+  el número del botón (para un mando con varios botones). Variables:
+  accesorio, botón, número del botón, pulsación, timbre.
+- **Accesorio HomeKit desconectado / de vuelta**: un accesorio ha dejado de
+  estar accesible o ha vuelto. Filtros opcionales: el dispositivo y el
+  estado. En un puente, cada dispositivo conectado envía su propio evento.
+
+Para elegir un botón en el filtro «Dispositivo», el accesorio debe haber
+creado un dispositivo en Gladys (por ejemplo a través de su batería). Si no,
+deje el filtro vacío.
+
+Acciones («Entonces…»):
+
+- **Identificar un dispositivo HomeKit**: el accesorio se hace notar.
+- **Releer un dispositivo HomeKit**: lee al instante todos sus valores (útil
+  antes de una condición).
+
+## Widget del panel
+
+El widget **Accesorios HomeKit** muestra cuántos accesorios están en línea y
+desconectados, la lista de accesorios (primero los inaccesibles) y, cuando
+uno está desconectado, un botón **Reconectar**.
+
+## Solución de problemas
+
+- **La búsqueda no encuentra el accesorio**: asegúrese de que está
+  encendido y en la misma red (misma VLAN) que Gladys. Pruebe una duración
+  de búsqueda más larga, o empareje con `IP:port`.
+- **«emparejado en otro sitio»**: elimínelo de la app Casa o restablézcalo
+  a los valores de fábrica.
+- **Accesorio inaccesible**: la pantalla de configuración muestra qué
+  accesorios están desconectados. La integración vuelve a intentarlo por sí
+  sola y encuentra de nuevo el accesorio si su dirección IP ha cambiado.
+  Para evitarlo, asigne al accesorio una dirección IP fija (reserva DHCP).
+- Los emparejamientos se guardan en el volumen `/data` de la integración:
+  se conservan entre actualizaciones.
+- Para más detalles, consulte los registros de la integración
+  (`LOG_LEVEL=debug`).
