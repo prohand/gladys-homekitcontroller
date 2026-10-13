@@ -75,7 +75,7 @@ Los demás servicios (cámaras, televisores…) se ignoran por ahora.
 
 ## Escenas
 
-Disparadores («Cuando…»):
+Activadores (en una escena, **Añadir activador → Integraciones**):
 
 - **Botón HomeKit pulsado**: se ha pulsado un botón o un timbre. Filtros
   opcionales: el dispositivo, el tipo de pulsación (simple, doble, larga) y
@@ -89,7 +89,7 @@ Para elegir un botón en el filtro «Dispositivo», el accesorio debe haber
 creado un dispositivo en Gladys (por ejemplo a través de su batería). Si no,
 deje el filtro vacío.
 
-Acciones («Entonces…»):
+Acciones (en una escena, **Nueva acción → Integraciones**):
 
 - **Identificar un dispositivo HomeKit**: el accesorio se hace notar.
 - **Releer un dispositivo HomeKit**: lee al instante todos sus valores (útil
@@ -108,7 +108,7 @@ uno está desconectado, un botón **Reconectar**.
   de búsqueda más larga, o empareje con `IP:port`.
 - **«emparejado en otro sitio»**: elimínelo de la app Casa o restablézcalo
   a los valores de fábrica.
-- **Accesorio inaccesible**: la pantalla de configuración muestra qué
+- **Accesorio inaccesible**: la pestaña **Configuración** de la integración muestra qué
   accesorios están desconectados. La integración vuelve a intentarlo por sí
   sola y encuentra de nuevo el accesorio si su dirección IP ha cambiado.
   Para evitarlo, asigne al accesorio una dirección IP fija (reserva DHCP).

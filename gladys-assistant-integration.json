@@ -5,7 +5,7 @@
   "description": {
     "en": "Pair and control your HomeKit Wi-Fi/Ethernet accessories from Gladys, no Apple hub needed.",
     "fr": "Appairez et pilotez vos accessoires HomeKit Wi-Fi/Ethernet depuis Gladys, sans hub Apple.",
-    "de": "Koppeln und steuern Sie Ihr HomeKit-WLAN-/Ethernet-Zubehör mit Gladys, ohne Apple-Hub.",
+    "de": "Kopple und steuere dein HomeKit-WLAN-/Ethernet-Zubehör mit Gladys, ohne Apple-Hub.",
     "es": "Empareje y controle sus accesorios HomeKit Wi-Fi/Ethernet desde Gladys, sin hub de Apple."
   },
   "version": "1.0.4",
@@ -31,9 +31,9 @@
         "es": "Primeros pasos"
       },
       "description": {
-        "en": "1. Remove the accessory from Apple Home (a HomeKit accessory accepts only one controller). 2. Click \"Search for accessories\" below. 3. Click \"Pair an accessory\" with its name and the 8-digit setup code printed on it. 4. Add its devices from the Discovery tab.",
+        "en": "1. Remove the accessory from Apple Home (a HomeKit accessory accepts only one controller). 2. Click \"Search for accessories\" below. 3. Click \"Pair an accessory\" with its name and the 8-digit setup code printed on it. 4. Add its devices from the Discover tab.",
         "fr": "1. Retirez l'accessoire de l'app Maison d'Apple (un accessoire HomeKit n'accepte qu'un seul contrôleur). 2. Cliquez sur « Rechercher les accessoires » ci-dessous. 3. Cliquez sur « Appairer un accessoire » avec son nom et le code à 8 chiffres imprimé dessus. 4. Ajoutez ses appareils depuis l'onglet Découverte.",
-        "de": "1. Entfernen Sie das Zubehör aus der Home-App von Apple (ein HomeKit-Zubehör akzeptiert nur einen Controller). 2. Klicken Sie unten auf „Zubehör suchen“. 3. Klicken Sie auf „Zubehör koppeln“ und geben Sie seinen Namen und den darauf aufgedruckten 8-stelligen Setup-Code ein. 4. Fügen Sie seine Geräte über die Registerkarte „Entdecken“ hinzu.",
+        "de": "1. Entferne das Zubehör aus der Home-App von Apple (ein HomeKit-Zubehör akzeptiert nur einen Controller). 2. Klicke unten auf „Zubehör suchen“. 3. Klicke auf „Zubehör koppeln“ und gib seinen Namen und den darauf aufgedruckten 8-stelligen Setup-Code ein. 4. Füge seine Geräte über die Registerkarte „Entdecken“ hinzu.",
         "es": "1. Elimine el accesorio de la app Casa de Apple (un accesorio HomeKit solo acepta un controlador). 2. Pulse «Buscar accesorios» más abajo. 3. Pulse «Emparejar un accesorio» con su nombre y el código de configuración de 8 cifras impreso en él. 4. Añada sus dispositivos desde la pestaña «Descubrir»."
       },
       "links": [

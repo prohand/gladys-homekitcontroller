@@ -710,7 +710,7 @@ export class HomeKitController {
       return {
         en: 'No HomeKit accessory found. Check that it is powered on, on the same network as Gladys, and not paired with another controller.',
         fr: "Aucun accessoire HomeKit trouvé. Vérifiez qu'il est allumé, sur le même réseau que Gladys, et non appairé à un autre contrôleur.",
-        de: 'Kein HomeKit-Zubehör gefunden. Prüfen Sie, ob es eingeschaltet ist, sich im selben Netzwerk wie Gladys befindet und nicht mit einem anderen Controller gekoppelt ist.',
+        de: 'Kein HomeKit-Zubehör gefunden. Prüfe, ob es eingeschaltet ist, sich im selben Netzwerk wie Gladys befindet und nicht mit einem anderen Controller gekoppelt ist.',
         es: 'No se ha encontrado ningún accesorio HomeKit. Asegúrese de que está encendido, en la misma red que Gladys y no emparejado con otro controlador.',
       };
     }
@@ -801,9 +801,9 @@ export class HomeKitController {
     await this.connect(id);
     const count = state.devices.size;
     return {
-      en: `${name} paired: ${count} device(s) are waiting in the Discovery tab.`,
+      en: `${name} paired: ${count} device(s) are waiting in the Discover tab.`,
       fr: `${name} appairé : ${count} appareil(s) vous attendent dans l'onglet Découverte.`,
-      de: `${name} gekoppelt: ${count} Gerät(e) warten in der Registerkarte „Entdecken“ auf Sie.`,
+      de: `${name} gekoppelt: ${count} Gerät(e) warten in der Registerkarte „Entdecken“ auf dich.`,
       es: `${name} emparejado: ${count} dispositivo(s) le esperan en la pestaña «Descubrir».`,
     };
   }
@@ -835,14 +835,14 @@ export class HomeKitController {
       return {
         en: `${record.name} unpaired. You can now delete its devices from Gladys.`,
         fr: `${record.name} désappairé. Vous pouvez maintenant supprimer ses appareils dans Gladys.`,
-        de: `${record.name} entkoppelt. Sie können seine Geräte jetzt in Gladys löschen.`,
+        de: `${record.name} entkoppelt. Du kannst seine Geräte jetzt in Gladys löschen.`,
         es: `${record.name} desemparejado. Ahora puede eliminar sus dispositivos en Gladys.`,
       };
     }
     return {
       en: `${record.name} removed from Gladys, but the accessory could not be reached: reset it before pairing it again.`,
       fr: `${record.name} retiré de Gladys, mais l'accessoire était injoignable : réinitialisez-le avant de l'appairer à nouveau.`,
-      de: `${record.name} aus Gladys entfernt, aber das Zubehör war nicht erreichbar: Setzen Sie es zurück, bevor Sie es erneut koppeln.`,
+      de: `${record.name} aus Gladys entfernt, aber das Zubehör war nicht erreichbar: Setze es zurück, bevor du es erneut koppelst.`,
       es: `${record.name} eliminado de Gladys, pero el accesorio no estaba accesible: restablézcalo antes de volver a emparejarlo.`,
     };
   }
@@ -886,7 +886,7 @@ export class HomeKitController {
     return {
       en: `Look around: ${device.name} is signalling itself.`,
       fr: `Regardez autour de vous : ${device.name} se signale.`,
-      de: `Sehen Sie sich um: ${device.name} macht sich bemerkbar.`,
+      de: `Sieh dich um: ${device.name} macht sich bemerkbar.`,
       es: `Mire a su alrededor: ${device.name} se está haciendo notar.`,
     };
   }

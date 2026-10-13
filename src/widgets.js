@@ -24,9 +24,9 @@ export function accessoriesWidget(accessories) {
         {
           type: 'text',
           text: {
-            en: 'No paired HomeKit accessory yet: pair one from the Configuration screen of the integration.',
+            en: 'No paired HomeKit accessory yet: pair one from the Configuration tab of the integration.',
             fr: "Aucun accessoire HomeKit appairé : appairez-en un depuis l'écran Configuration de l'intégration.",
-            de: 'Noch kein HomeKit-Zubehör gekoppelt: Koppeln Sie eines in der Registerkarte „Konfiguration“ der Integration.',
+            de: 'Noch kein HomeKit-Zubehör gekoppelt: Kopple eines in der Registerkarte „Konfiguration“ der Integration.',
             es: 'Aún no hay ningún accesorio HomeKit emparejado: empareje uno desde la pestaña «Configuración» de la integración.',
           },
         },
