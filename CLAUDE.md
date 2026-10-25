@@ -41,7 +41,8 @@ Avant chaque commit : `npm run format:check && npm run lint && npm test`.
   contrôleur (`SCENE_TRIGGERS`), actions `identify` / `refresh` dans
   `index.js`. **Ne jamais renommer une clé publiée** (déclencheur, action,
   widget) : les scènes des utilisateurs la référencent. Ces champs exigent
-  `gladys_version` ≥ 5.1.0.
+  `gladys_version` ≥ 5.1.0, et `keywords` (mots-clés de recherche du
+  catalogue) ≥ 5.3.0 : le manifest déclare `>=5.3.0`.
 - `.github/` : workflows et Dependabot **identiques à `prohand/gladys-forecastsolar`**
   (garder les deux dépôts alignés). `.github/scripts/changelog-release.mjs`
   déplace `Unreleased` dans la nouvelle version lors d'une release.

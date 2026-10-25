@@ -41,7 +41,8 @@ Documentation utilisateur : [`docs/fr.md`](./docs/fr.md) / [`docs/en.md`](./docs
   `refresh` (`onSceneAction`).
 - **Widget** : `accessories` (en ligne / hors ligne, bouton « Reconnecter »),
   contenu construit par `src/widgets.js`. Ces champs du manifest exigent
-  Gladys ≥ 5.1.0.
+  Gladys ≥ 5.1.0 ; les mots-clés de recherche du catalogue (`keywords`)
+  portent le minimum à Gladys ≥ 5.3.0.
 
 Limites : pas de Bluetooth (BLE) ni de Thread (le conteneur n'a pas accès à
 la radio), pas de caméras ni de télévisions pour l'instant.

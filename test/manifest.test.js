@@ -81,15 +81,72 @@ test('only the local transport is declared (HomeKit IP never uses a cloud)', () 
   assert.deepEqual(manifest.transports, ['local']);
 });
 
-test('gladys_version covers categories (4.86.0) and capabilities (5.1.0)', () => {
-  assert.ok(manifest.categories.length >= 1 && manifest.categories.length <= 3);
-  const minVersion = manifest.gladys_version.match(/>=\s*(\d+)\.(\d+)\.\d+/);
+// The store's catalog shelves (2026-10): an unknown key is silently dropped.
+const CATEGORY_VOCABULARY = [
+  'climate',
+  'lighting',
+  'energy',
+  'security',
+  'multimedia',
+  'appliances',
+  'environment',
+  'protocols',
+  'network',
+  'notifications',
+  'assistants',
+  'services',
+  'transport',
+  'vehicles',
+  'servers',
+  'leisure',
+];
+
+/** The minimum of `gladys_version` as [major, minor, patch]. */
+function gladysFloor() {
+  const minVersion = manifest.gladys_version.match(/>=\s*(\d+)\.(\d+)\.(\d+)/);
   assert.ok(minVersion, 'gladys_version must declare a minimum version');
-  const [, major, minor] = minVersion.map(Number);
-  assert.ok(
-    major > 5 || (major === 5 && minor >= 1),
-    `widgets and scene declarations require gladys_version >= 5.1.0, got "${manifest.gladys_version}"`,
-  );
+  return minVersion.slice(1).map(Number);
+}
+
+/** True when the `gladys_version` minimum is at least `major.minor.patch`. */
+function floorAtLeast(major, minor, patch = 0) {
+  const [fMajor, fMinor, fPatch] = gladysFloor();
+  if (fMajor !== major) return fMajor > major;
+  if (fMinor !== minor) return fMinor > minor;
+  return fPatch >= patch;
+}
+
+test('gladys_version covers every declared field', () => {
+  assert.ok(floorAtLeast(4, 86), 'categories require gladys_version >= 4.86.0');
+  assert.ok(floorAtLeast(5, 1), 'widgets and scene declarations require gladys_version >= 5.1.0');
+  if (manifest.keywords || manifest.countries || manifest.music) {
+    assert.ok(
+      floorAtLeast(5, 3),
+      `keywords / countries / music require gladys_version >= 5.3.0, got "${manifest.gladys_version}"`,
+    );
+  }
+});
+
+test('categories are 1 to 3 shelves of the store vocabulary', () => {
+  assert.ok(manifest.categories.length >= 1 && manifest.categories.length <= 3);
+  assert.equal(new Set(manifest.categories).size, manifest.categories.length);
+  for (const category of manifest.categories) {
+    assert.ok(CATEGORY_VOCABULARY.includes(category), `unknown category "${category}"`);
+  }
+});
+
+test('keywords are 1 to 10 unique search terms of 2 to 30 characters', () => {
+  assert.ok(Array.isArray(manifest.keywords));
+  assert.ok(manifest.keywords.length >= 1 && manifest.keywords.length <= 10);
+  const normalized = manifest.keywords.map((keyword) => keyword.trim().toLowerCase());
+  assert.equal(new Set(normalized).size, normalized.length, 'keywords must be unique');
+  for (const keyword of normalized) {
+    assert.ok(keyword.length >= 2 && keyword.length <= 30, `keyword "${keyword}"`);
+  }
+});
+
+test('no countries: HomeKit accessories are sold worldwide', () => {
+  assert.equal(manifest.countries, undefined);
 });
 
 test('config_schema defaults stay consistent with DEFAULT_CONFIG', () => {
