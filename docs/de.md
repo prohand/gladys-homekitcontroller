@@ -15,7 +15,7 @@ sich direkt mit deinem WLAN-/Ethernet-HomeKit-Zubehör und steuert es lokal,
 - Das Zubehör muss sich im **selben lokalen Netzwerk** wie Gladys befinden.
 - Nur **IP**-Zubehör (WLAN, Ethernet) wird unterstützt. Bluetooth- und
   Thread-Zubehör nicht.
-- **Gladys 5.1.0 oder neuer** ist erforderlich.
+- **Gladys 5.3.0 oder neuer** ist erforderlich.
 
 ## Ein Zubehör koppeln
 

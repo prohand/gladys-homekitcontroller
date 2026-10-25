@@ -14,7 +14,7 @@ local, **sans iPhone, sans Apple TV ni HomePod**, et sans cloud.
 - L'accessoire doit être sur le **même réseau local** que Gladys.
 - Seuls les accessoires **IP** (Wi-Fi, Ethernet) sont pris en charge. Les
   accessoires Bluetooth et Thread ne le sont pas.
-- Il faut **Gladys 5.1.0 ou plus récent**.
+- Il faut **Gladys 5.3.0 ou plus récent**.
 
 ## Appairer un accessoire
 

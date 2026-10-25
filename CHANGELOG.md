@@ -11,6 +11,20 @@ la section de la nouvelle version et les publie dans la Release GitHub.
 
 ## [Unreleased]
 
+### Ajouté
+
+- Mots-clés de recherche du catalogue (`keywords` : HAP, Apple Home,
+  Homebridge, marques d'accessoires HomeKit Wi-Fi).
+
+### Modifié
+
+- SDK `@gladysassistant/integration-sdk` mis à jour en 0.16.0.
+- Gladys 5.3.0 ou plus récent est désormais requis (champ `keywords` du
+  manifest).
+- CI : les vérifications du store passent `--skip-image-check` sur les pull
+  requests ; le workflow Release relance la vérification complète, image
+  comprise, une fois l'image publiée.
+
 ## [1.1.1] - 2026-10-23
 
 - Maintenance release, no functional change.
