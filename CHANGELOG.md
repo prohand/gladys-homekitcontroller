@@ -11,6 +11,8 @@ la section de la nouvelle version et les publie dans la Release GitHub.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-09
+
 ### Ajouté
 
 - Boutons et sonnettes : chaque bouton donne une fonctionnalité Gladys
@@ -118,7 +120,8 @@ la section de la nouvelle version et les publie dans la Release GitHub.
   Docker (chaque mois).
 - Une Release GitHub par version, avec les notes de ce changelog.
 
-[Unreleased]: https://github.com/prohand/gladys-homekitcontroller/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/prohand/gladys-homekitcontroller/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/prohand/gladys-homekitcontroller/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/prohand/gladys-homekitcontroller/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/prohand/gladys-homekitcontroller/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/prohand/gladys-homekitcontroller/compare/v1.0.4...v1.1.0
