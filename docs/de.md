@@ -36,23 +36,43 @@ Eine HomeKit-**Bridge** ergibt ein Gladys-Gerät pro angebundenem Zubehör.
 
 ## Unterstützte Geräte
 
-| HomeKit-Dienst              | In Gladys                                    |
-| --------------------------- | -------------------------------------------- |
-| Lampe                       | Ein/Aus, Helligkeit, Farbe, Farbtemperatur   |
-| Schalter, Steckdose, Ventil | Ein/Aus                                      |
-| Ventilator                  | Ein/Aus, Geschwindigkeit                     |
-| Thermostat                  | Temperatur, Solltemperatur, Luftfeuchtigkeit |
-| Rollladen, Fenster, Tür     | Position, öffnen / stoppen / schließen       |
-| Schloss                     | Verriegelt / entriegelt                      |
-| Sensoren                    | Temperatur, Luftfeuchtigkeit, Helligkeit,    |
-|                             | Bewegung, Anwesenheit, Kontakt, Leck, Rauch, |
-|                             | CO, CO2, Feinstaub PM2.5 / PM10              |
-| Batterie                    | Ladestand, niedriger Batteriestand           |
+| HomeKit-Dienst               | In Gladys                                                            |
+| ---------------------------- | -------------------------------------------------------------------- |
+| Lampe                        | Ein/Aus, Helligkeit, Farbe, Farbtemperatur                           |
+| Schalter, Steckdose, Ventil  | Ein/Aus                                                              |
+| Ventilator                   | Ein/Aus, Geschwindigkeit                                             |
+| Thermostat                   | Temperatur, Solltemperatur, Luftfeuchtigkeit, Modus, Betriebszustand |
+| Klimagerät (Heizen / Kühlen) | Ein/Aus, Modus, Solltemperatur, Temperatur                           |
+| Rollladen, Fenster, Tür      | Position, öffnen / stoppen / schließen                               |
+| Schloss                      | Verriegelt / entriegelt                                              |
+| Sensoren                     | Temperatur, Luftfeuchtigkeit, Helligkeit,                            |
+|                              | Bewegung, Anwesenheit, Kontakt, Leck, Rauch,                         |
+|                              | CO, CO2, Feinstaub PM2.5 / PM10, VOC, NO2, Ozon, SO2                 |
+| Batterie                     | Ladestand, niedriger Batteriestand                                   |
+| Taste, Türklingel            | Drücken                                                              |
 
-**Programmierbare Tasten** und **Türklingeln** sind keine Geräte: Ihr
-Drücken löst Szenen aus (siehe unten).
+Eine **Taste** ergibt eine Funktion „Taste“, deren Wert sich bei jedem
+Drücken ändert: `1` einfach, `2` doppelt, `6` lang. Eine **Türklingel**
+ergibt eine Funktion „Türklingel“ (`1` bei jedem Klingeln). Nutze sie mit
+dem üblichen Auslöser
+für den Zustand eines Geräts oder mit dem
+Auslöser **HomeKit-Taste gedrückt** (siehe unten).
 
-Andere Dienste (Kameras, Fernseher…) werden vorerst ignoriert.
+Klimagerät: Der Modus ist `0` Auto, `1` Kühlen, `2` Heizen (HomeKit kennt
+weder Entfeuchten noch reinen Lüfterbetrieb). Die Solltemperatur folgt dem
+Modus: Heizschwelle im Heizmodus, sonst Kühlschwelle.
+
+Nach einem Update der Integration kann ein bereits angelegtes Gerät neue
+Funktionen erhalten: Die Registerkarte **Entdecken** bietet dann an, es zu
+aktualisieren.
+
+Andere Dienste (Kameras, Fernseher…) werden vorerst ignoriert. Bei jeder
+Verbindung listen die Protokolle die nicht unterstützten Dienste jedes
+Zubehörs auf (`HomeKit service(s) not supported: …`): Füge diese Zeile einer
+Anfrage zur Unterstützung bei.
+
+Sichtbar ist nur, was die Bridge über **HomeKit** veröffentlicht: Ein Gerät,
+das ein Hub nur über **Matter** teilt, erscheint hier nicht.
 
 ## Einstellungen
 
@@ -84,8 +104,8 @@ Auslöser (in einer Szene **Auslöser hinzufügen → Integrationen**):
   erreichbar oder wieder da. Optionale Filter: das Gerät und der Status. Bei
   einer Bridge sendet jedes angebundene Gerät sein eigenes Ereignis.
 
-Um eine Taste im Filter „Gerät“ auszuwählen, muss das Zubehör ein Gerät in
-Gladys angelegt haben (zum Beispiel über seine Batterie). Andernfalls lass den Filter leer.
+Um eine Taste im Filter „Gerät“ auszuwählen, lege zuerst ihr Gerät in Gladys
+an (Registerkarte **Entdecken**). Andernfalls lass den Filter leer.
 
 Aktionen (in einer Szene **Neue Aktion → Integrationen**):
 

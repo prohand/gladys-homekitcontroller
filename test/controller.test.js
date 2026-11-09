@@ -282,7 +282,11 @@ test('a button press fires the button_pressed scene trigger', async (t) => {
   const [client] = factory.clients;
   assert.ok(client.subscribed.includes('1.11'));
   assert.ok(client.subscribed.includes('1.21'));
-  assert.equal(controller.buildDiscoveredDevices()[0].features.length, 2, 'battery only');
+  assert.deepEqual(
+    controller.buildDiscoveredDevices()[0].features.map((f) => f.category),
+    ['battery', 'battery-low', 'button', 'button'],
+  );
+  gladys.published.length = 0;
 
   client.emit('event', { characteristics: [{ aid: 1, iid: 21, value: 1 }] });
   // A read of a ProgrammableSwitchEvent returns null: not a press.
@@ -302,6 +306,23 @@ test('a button press fires the button_pressed scene trigger', async (t) => {
       },
     },
   ]);
+  // The press is published on the button feature too (2 = double click).
+  assert.deepEqual(gladys.published, [
+    { featureExternalId: 'accessory:1a2b3c4d5e6f-1:21', state: 2 },
+  ]);
+
+  // Two identical presses in a row are two states (no deduplication).
+  client.emit('event', { characteristics: [{ aid: 1, iid: 11, value: 0 }] });
+  await new Promise((resolve) => setImmediate(resolve));
+  client.emit('event', { characteristics: [{ aid: 1, iid: 11, value: 0 }] });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(
+    gladys.published.slice(1).map((p) => [p.featureExternalId, p.state]),
+    [
+      ['accessory:1a2b3c4d5e6f-1:11', 1],
+      ['accessory:1a2b3c4d5e6f-1:11', 1],
+    ],
+  );
 });
 
 test('losing and getting back an accessory fires the status trigger', async (t) => {
