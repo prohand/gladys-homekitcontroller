@@ -11,6 +11,19 @@ la section de la nouvelle version et les publie dans la Release GitHub.
 
 ## [Unreleased]
 
+### Ajouté
+
+- Boutons et sonnettes : chaque bouton donne une fonctionnalité Gladys
+  « Bouton » (`1` simple, `2` double, `6` long ; `1` pour une sonnette),
+  utilisable avec le déclencheur d'état d'appareil habituel. Le déclencheur
+  `button_pressed` reste inchangé.
+- Climatiseurs (service HomeKit « Heater Cooler ») : marche/arrêt, mode
+  (auto, froid, chaud), consigne et température.
+- Thermostats : mode (arrêt, chauffe, froid, auto) et état de fonctionnement.
+- Capteurs de qualité d'air : COV, NO2, ozone et SO2 (µg/m³).
+- Les logs listent, à chaque connexion, les services HomeKit non pris en
+  charge de chaque accessoire.
+
 ## [1.2.0] - 2026-10-25
 
 ### Ajouté

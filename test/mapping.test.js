@@ -1,6 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mapAccessory, mapButtons, toHapValue, COVER_STATE } from '../src/mapping/index.js';
+import {
+  AC_MODE,
+  BUTTON_STATUS,
+  COVER_STATE,
+  buttonFeatureValue,
+  mapAccessory,
+  mapButtons,
+  toHapValue,
+} from '../src/mapping/index.js';
 import { hsToRgbInt, rgbIntToHs } from '../src/mapping/color.js';
 import { shortType } from '../src/hap/uuid.js';
 import { BRIDGE_DATABASE, BUTTON_DATABASE } from './helpers/fixtures.js';
@@ -170,18 +178,237 @@ test('color conversions round-trip on primary colors', () => {
   assert.deepEqual(rgbIntToHs(0xffffff), { hue: 0, saturation: 0 });
 });
 
-test('programmable switches are listed as buttons, not features', () => {
+test('programmable switches are listed as buttons and get a button feature each', () => {
   const [remote] = BUTTON_DATABASE.accessories;
   assert.deepEqual(mapButtons(remote), [
     { iid: 11, index: 1, name: 'Up', doorbell: false },
     { iid: 21, index: 2, name: 'Down', doorbell: false },
   ]);
-  const { features, buttons } = mapAccessory(remote);
+  const { features, buttons, unsupported } = mapAccessory(remote);
   assert.equal(buttons.length, 2);
+  assert.deepEqual(unsupported, []);
   assert.deepEqual(
-    features.map((f) => f.category),
-    ['battery', 'battery-low'],
+    features.map((f) => [f.key, f.name, f.category, f.type, f.read_only]),
+    [
+      ['31', 'Battery', 'battery', 'integer', true],
+      ['32', 'Low battery', 'battery-low', 'binary', true],
+      ['11', 'Up - Button', 'button', 'click', true],
+      ['21', 'Down - Button', 'button', 'click', true],
+    ],
   );
+  // Fed by the presses only: never read nor subscribed through the feature.
+  const up = byKey(features, '11');
+  assert.deepEqual([up.reads, up.events, up.write], [[], [], undefined]);
+});
+
+test('a lone button is named "Button" and presses map to BUTTON_STATUS', () => {
+  const miButton = {
+    aid: 5,
+    services: [
+      {
+        iid: 1,
+        type: '3E',
+        characteristics: [{ iid: 2, type: '23', perms: ['pr'], value: 'Mi Button' }],
+      },
+      {
+        iid: 10,
+        type: '89',
+        characteristics: [{ iid: 11, type: '73', perms: ['pr', 'ev'], format: 'uint8' }],
+      },
+    ],
+  };
+  const { features, buttons } = mapAccessory(miButton);
+  assert.deepEqual(
+    features.map((f) => [f.key, f.name, f.category]),
+    [['11', 'Button', 'button']],
+  );
+  const [button] = buttons;
+  assert.equal(buttonFeatureValue(button, 0), BUTTON_STATUS.CLICK);
+  assert.equal(buttonFeatureValue(button, 1), BUTTON_STATUS.DOUBLE_CLICK);
+  assert.equal(buttonFeatureValue(button, 2), BUTTON_STATUS.LONG_CLICK);
+  assert.equal(buttonFeatureValue(button, null), null, 'a read is not a press');
+  assert.equal(buttonFeatureValue(button, 7), null);
+  assert.equal(buttonFeatureValue({ ...button, doorbell: true }, 0), 1, 'a doorbell rings');
+});
+
+test('unsupported services are listed, technical ones are not', () => {
+  const camera = {
+    aid: 1,
+    services: [
+      { iid: 1, type: '3E', characteristics: [] },
+      { iid: 2, type: 'A2', characteristics: [] },
+      { iid: 3, type: '110', characteristics: [] },
+      { iid: 4, type: 'E863F007-079E-48FF-8F27-9C2605A29F52', characteristics: [] },
+      { iid: 5, type: '110', characteristics: [] },
+    ],
+  };
+  assert.deepEqual(mapAccessory(camera).unsupported, [
+    '110',
+    'E863F007-079E-48FF-8F27-9C2605A29F52',
+  ]);
+});
+
+test('a heater cooler maps to an air conditioning device', () => {
+  const ac = {
+    aid: 6,
+    services: [
+      {
+        iid: 10,
+        type: 'BC',
+        characteristics: [
+          { iid: 11, type: 'B0', perms: ['pr', 'pw', 'ev'], format: 'uint8', value: 1 },
+          { iid: 12, type: 'B1', perms: ['pr', 'ev'], format: 'uint8', value: 3 },
+          {
+            iid: 13,
+            type: 'B2',
+            perms: ['pr', 'pw', 'ev'],
+            format: 'uint8',
+            'valid-values': [0, 1, 2],
+            value: 2,
+          },
+          { iid: 14, type: '11', perms: ['pr', 'ev'], format: 'float', value: 26.5 },
+          {
+            iid: 15,
+            type: 'D',
+            perms: ['pr', 'pw', 'ev'],
+            format: 'float',
+            minValue: 16,
+            maxValue: 30,
+            minStep: 0.5,
+            value: 24,
+          },
+          {
+            iid: 16,
+            type: '12',
+            perms: ['pr', 'pw', 'ev'],
+            format: 'float',
+            minValue: 16,
+            maxValue: 30,
+            minStep: 0.5,
+            value: 20,
+          },
+        ],
+      },
+    ],
+  };
+  const { features } = mapAccessory(ac);
+  assert.deepEqual(
+    features.map((f) => [f.key, f.category, f.type, f.read_only]),
+    [
+      ['11', 'air-conditioning', 'binary', false],
+      ['13', 'air-conditioning', 'mode', false],
+      ['14', 'temperature-sensor', 'decimal', true],
+      ['15', 'air-conditioning', 'target-temperature', false],
+    ],
+  );
+  const get = getterFor(ac);
+  const power = byKey(features, '11');
+  assert.equal(power.read(get), 1);
+  assert.deepEqual(power.write(0), { 11: 0 });
+
+  // HAP 2 = cool <-> Gladys AC_MODE.COOLING (1), HAP 1 = heat <-> HEATING (2).
+  const mode = byKey(features, '13');
+  assert.equal(mode.read(get), AC_MODE.COOLING);
+  assert.equal(mode.read(getterFor(ac, { 13: 1 })), AC_MODE.HEATING);
+  assert.equal(mode.read(getterFor(ac, { 13: 0 })), AC_MODE.AUTO);
+  assert.deepEqual(mode.write(AC_MODE.HEATING), { 13: 1 });
+  assert.deepEqual(mode.write(AC_MODE.COOLING), { 13: 2 });
+  assert.throws(() => mode.write(AC_MODE.DRYING), /does not exist in HomeKit/);
+
+  // Target temperature follows the mode: cooling threshold in cool / auto,
+  // heating threshold in heat. A mode change refreshes it (reads the mode).
+  const target = byKey(features, '15');
+  assert.deepEqual([target.min, target.max, target.step], [16, 30, 0.5]);
+  assert.ok(target.reads.includes(13));
+  assert.equal(target.read(get), 24);
+  assert.deepEqual(target.write(22, get), { 15: 22 });
+  const heat = getterFor(ac, { 13: 1 });
+  assert.equal(target.read(heat), 20);
+  assert.deepEqual(target.write(19, heat), { 16: 19 });
+  assert.equal(target.read(getterFor(ac, { 13: 0 })), 24);
+});
+
+test('a thermostat exposes its mode and operating state', () => {
+  const thermostat = {
+    aid: 7,
+    services: [
+      {
+        iid: 10,
+        type: '4A',
+        characteristics: [
+          { iid: 11, type: '11', perms: ['pr', 'ev'], format: 'float', value: 19 },
+          { iid: 12, type: '35', perms: ['pr', 'pw', 'ev'], format: 'float', value: 20 },
+          {
+            iid: 13,
+            type: '33',
+            perms: ['pr', 'pw', 'ev'],
+            format: 'uint8',
+            'valid-values': [0, 1],
+            value: 1,
+          },
+          { iid: 14, type: 'F', perms: ['pr', 'ev'], format: 'uint8', value: 1 },
+        ],
+      },
+    ],
+  };
+  const { features } = mapAccessory(thermostat);
+  assert.deepEqual(
+    features.map((f) => [f.key, f.category, f.type, f.read_only]),
+    [
+      ['11', 'temperature-sensor', 'decimal', true],
+      ['12', 'thermostat', 'target-temperature', false],
+      ['13', 'thermostat', 'mode', false],
+      ['14', 'thermostat', 'operating-state', true],
+    ],
+  );
+  const get = getterFor(thermostat);
+  const mode = byKey(features, '13');
+  assert.equal(mode.read(get), 1);
+  assert.deepEqual(mode.write(0), { 13: 0 });
+  assert.throws(() => mode.write(2), /not supported/, 'cooling is not a valid value here');
+  assert.equal(byKey(features, '14').read(get), 1);
+});
+
+test('an air quality sensor maps its gas densities', () => {
+  const tvoc = {
+    aid: 8,
+    services: [
+      {
+        iid: 10,
+        type: '8D',
+        characteristics: [
+          { iid: 11, type: '95', perms: ['pr', 'ev'], format: 'uint8', value: 2 },
+          { iid: 12, type: 'C8', perms: ['pr', 'ev'], format: 'float', value: 120 },
+          { iid: 13, type: 'C4', perms: ['pr'], format: 'float', value: 10 },
+          { iid: 14, type: 'C3', perms: ['pr'], format: 'float', value: 20 },
+          { iid: 15, type: 'C5', perms: ['pr'], format: 'float', value: 5 },
+        ],
+      },
+      {
+        iid: 20,
+        type: '8A',
+        characteristics: [{ iid: 21, type: '11', perms: ['pr', 'ev'], value: 22 }],
+      },
+      {
+        iid: 30,
+        type: '82',
+        characteristics: [{ iid: 31, type: '10', perms: ['pr', 'ev'], value: 45 }],
+      },
+    ],
+  };
+  const { features } = mapAccessory(tvoc);
+  assert.deepEqual(
+    features.map((f) => [f.key, f.name, f.category, f.unit]),
+    [
+      ['12', 'VOC', 'voc-sensor', 'microgram-per-cubic-meter'],
+      ['13', 'NO2', 'no2-sensor', 'microgram-per-cubic-meter'],
+      ['14', 'Ozone', 'o3-sensor', 'microgram-per-cubic-meter'],
+      ['15', 'SO2', 'so2-sensor', 'microgram-per-cubic-meter'],
+      ['21', 'Temperature', 'temperature-sensor', 'celsius'],
+      ['31', 'Humidity', 'humidity-sensor', 'percent'],
+    ],
+  );
+  assert.equal(byKey(features, '12').read(getterFor(tvoc)), 120);
 });
 
 test('a doorbell is a button too', () => {

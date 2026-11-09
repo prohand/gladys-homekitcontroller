@@ -40,18 +40,37 @@ Un **pont** (bridge) HomeKit donne un appareil Gladys par accessoire relié.
 | Ampoule                      | Marche/arrêt, luminosité, couleur, température |
 | Interrupteur, prise, vanne   | Marche/arrêt                                   |
 | Ventilateur                  | Marche/arrêt, vitesse                          |
-| Thermostat                   | Température, consigne, humidité                |
+| Thermostat                   | Température, consigne, humidité, mode, état    |
+| Climatiseur (chaud / froid)  | Marche/arrêt, mode, consigne, température      |
 | Volet, store, fenêtre, porte | Position, ouvrir / stop / fermer               |
 | Serrure                      | Verrouillée / déverrouillée                    |
 | Capteurs                     | Température, humidité, luminosité, mouvement,  |
 |                              | présence, ouverture, fuite, fumée, CO, CO2,    |
-|                              | particules PM2.5 / PM10                        |
+|                              | particules PM2.5 / PM10, COV, NO2, ozone, SO2  |
 | Batterie                     | Niveau, batterie faible                        |
+| Bouton, sonnette             | Appui                                          |
 
-Les **boutons programmables** et les **sonnettes** ne sont pas des appareils :
-leurs appuis déclenchent des scènes (voir plus bas).
+Un **bouton** donne une fonctionnalité « Bouton » dont la valeur change à
+chaque appui : `1` simple, `2` double, `6` long. Une **sonnette** donne une
+fonctionnalité « Sonnette » (`1` à chaque appui). Utilisez-les avec le
+déclencheur habituel sur l'état d'un appareil, ou avec le déclencheur
+**Bouton HomeKit appuyé** (voir plus bas).
 
-Les autres services (caméras, télévisions…) sont ignorés pour l'instant.
+Climatiseur : le mode vaut `0` auto, `1` froid, `2` chaud (HomeKit ne connaît
+pas les modes déshumidification et ventilation). La consigne suit le mode :
+seuil de chauffe en mode chaud, seuil de froid sinon.
+
+Après une mise à jour de l'intégration, un appareil déjà créé peut gagner de
+nouvelles fonctionnalités : l'onglet **Découverte** propose alors de le
+mettre à jour.
+
+Les autres services (caméras, télévisions…) sont ignorés pour l'instant. Les
+logs listent, à chaque connexion, les services non pris en charge de chaque
+accessoire (`HomeKit service(s) not supported: …`) : joignez cette ligne à
+une demande de prise en charge.
+
+Seul ce que le pont publie en **HomeKit** est visible : un appareil qu'un
+hub ne partage qu'en **Matter** n'apparaît pas ici.
 
 ## Réglages
 
@@ -83,9 +102,8 @@ Déclencheurs (« Quand… ») :
   injoignable, ou est revenu. Filtres facultatifs : l'appareil et l'état.
   Pour un pont, chaque appareil relié envoie son propre événement.
 
-Pour choisir un bouton dans le filtre « Appareil », l'accessoire doit avoir
-créé un appareil dans Gladys (par exemple grâce à sa batterie). Sinon,
-laissez le filtre vide.
+Pour choisir un bouton dans le filtre « Appareil », créez d'abord son
+appareil dans Gladys (onglet **Découverte**). Sinon, laissez le filtre vide.
 
 Actions (« Alors… ») :
 

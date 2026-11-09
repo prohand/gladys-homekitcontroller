@@ -35,23 +35,39 @@ A HomeKit **bridge** gives one Gladys device per bridged accessory.
 
 ## Supported devices
 
-| HomeKit service               | In Gladys                                    |
-| ----------------------------- | -------------------------------------------- |
-| Lightbulb                     | On/off, brightness, color, color temperature |
-| Switch, outlet, valve         | On/off                                       |
-| Fan                           | On/off, speed                                |
-| Thermostat                    | Temperature, target temperature, humidity    |
-| Window covering, window, door | Position, open / stop / close                |
-| Lock                          | Locked / unlocked                            |
-| Sensors                       | Temperature, humidity, illuminance, motion,  |
-|                               | occupancy, contact, leak, smoke, CO, CO2,    |
-|                               | PM2.5 / PM10 particles                       |
-| Battery                       | Level, low battery                           |
+| HomeKit service                 | In Gladys                                                        |
+| ------------------------------- | ---------------------------------------------------------------- |
+| Lightbulb                       | On/off, brightness, color, color temperature                     |
+| Switch, outlet, valve           | On/off                                                           |
+| Fan                             | On/off, speed                                                    |
+| Thermostat                      | Temperature, target temperature, humidity, mode, operating state |
+| Heater cooler (air conditioner) | On/off, mode, target temperature, temperature                    |
+| Window covering, window, door   | Position, open / stop / close                                    |
+| Lock                            | Locked / unlocked                                                |
+| Sensors                         | Temperature, humidity, illuminance, motion,                      |
+|                                 | occupancy, contact, leak, smoke, CO, CO2,                        |
+|                                 | PM2.5 / PM10 particles, VOC, NO2, ozone, SO2                     |
+| Battery                         | Level, low battery                                               |
+| Button, doorbell                | Press                                                            |
 
-**Programmable buttons** and **doorbells** are not devices: their presses
-trigger scenes (see below).
+A **button** gives a "Button" feature whose value changes on each press:
+`1` single, `2` double, `6` long. A **doorbell** gives a "Doorbell" feature
+(`1` on each ring). Use them with the usual device state trigger, or with
+the **HomeKit button pressed** trigger (see below).
 
-Other services (cameras, televisions…) are ignored for now.
+Air conditioner: the mode is `0` auto, `1` cooling, `2` heating (HomeKit has
+no dry or fan-only mode). The target temperature follows the mode: heating
+threshold in heating mode, cooling threshold otherwise.
+
+After an update of the integration, a device already created may gain new
+features: the **Discover** tab then offers to update it.
+
+Other services (cameras, televisions…) are ignored for now. On each
+connection, the logs list the unsupported services of each accessory
+(`HomeKit service(s) not supported: …`): add this line to a support request.
+
+Only what the bridge publishes over **HomeKit** is visible: a device a hub
+only shares over **Matter** does not show up here.
 
 ## Settings
 
@@ -83,9 +99,8 @@ Triggers (in a scene, **Add trigger → Integrations**):
   came back. Optional filters: the device and the status. For a bridge, each
   bridged device sends its own event.
 
-To pick a button in the "Device" filter, the accessory must have created a
-device in Gladys (for example through its battery). Otherwise, leave the
-filter empty.
+To pick a button in the "Device" filter, first create its device in Gladys
+(**Discover** tab). Otherwise, leave the filter empty.
 
 Actions (in a scene, **New action → Integrations**):
 

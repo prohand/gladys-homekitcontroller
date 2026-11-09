@@ -37,23 +37,42 @@ conectado al puente.
 
 ## Dispositivos compatibles
 
-| Servicio HomeKit              | En Gladys                                              |
-| ----------------------------- | ------------------------------------------------------ |
-| Bombilla                      | Encendido/apagado, brillo, color, temperatura de color |
-| Interruptor, enchufe, válvula | Encendido/apagado                                      |
-| Ventilador                    | Encendido/apagado, velocidad                           |
-| Termostato                    | Temperatura, temperatura objetivo, humedad             |
-| Persiana, ventana, puerta     | Posición, abrir / parar / cerrar                       |
-| Cerradura                     | Bloqueada / desbloqueada                               |
-| Sensores                      | Temperatura, humedad, luminosidad, movimiento,         |
-|                               | ocupación, contacto, fuga, humo, CO, CO2,              |
-|                               | partículas PM2.5 / PM10                                |
-| Batería                       | Nivel, batería baja                                    |
+| Servicio HomeKit              | En Gladys                                                                  |
+| ----------------------------- | -------------------------------------------------------------------------- |
+| Bombilla                      | Encendido/apagado, brillo, color, temperatura de color                     |
+| Interruptor, enchufe, válvula | Encendido/apagado                                                          |
+| Ventilador                    | Encendido/apagado, velocidad                                               |
+| Termostato                    | Temperatura, temperatura objetivo, humedad, modo, estado de funcionamiento |
+| Climatizador (calor / frío)   | Encendido/apagado, modo, temperatura objetivo, temperatura                 |
+| Persiana, ventana, puerta     | Posición, abrir / parar / cerrar                                           |
+| Cerradura                     | Bloqueada / desbloqueada                                                   |
+| Sensores                      | Temperatura, humedad, luminosidad, movimiento,                             |
+|                               | ocupación, contacto, fuga, humo, CO, CO2,                                  |
+|                               | partículas PM2.5 / PM10, COV, NO2, ozono, SO2                              |
+| Batería                       | Nivel, batería baja                                                        |
+| Botón, timbre                 | Pulsación                                                                  |
 
-Los **botones programables** y los **timbres** no son dispositivos: sus
-pulsaciones activan escenas (ver más abajo).
+Un **botón** da una funcionalidad «Botón» cuyo valor cambia en cada
+pulsación: `1` simple, `2` doble, `6` larga. Un **timbre** da una
+funcionalidad «Timbre» (`1` en cada llamada). Úselas con el disparador
+habitual sobre el estado de un dispositivo, o con el disparador **Botón
+HomeKit pulsado** (ver más abajo).
 
-Los demás servicios (cámaras, televisores…) se ignoran por ahora.
+Climatizador: el modo vale `0` auto, `1` frío, `2` calor (HomeKit no tiene
+modos deshumidificación ni solo ventilador). La temperatura objetivo sigue
+el modo: umbral de calefacción en modo calor, umbral de refrigeración si no.
+
+Tras una actualización de la integración, un dispositivo ya creado puede
+ganar nuevas funcionalidades: la pestaña **Descubrir** propone entonces
+actualizarlo.
+
+Los demás servicios (cámaras, televisores…) se ignoran por ahora. En cada
+conexión, los registros listan los servicios no compatibles de cada
+accesorio (`HomeKit service(s) not supported: …`): añada esta línea a una
+solicitud de compatibilidad.
+
+Solo es visible lo que el puente publica en **HomeKit**: un dispositivo que
+un hub solo comparte en **Matter** no aparece aquí.
 
 ## Ajustes
 
@@ -85,9 +104,8 @@ Activadores (en una escena, **Añadir activador → Integraciones**):
   estar accesible o ha vuelto. Filtros opcionales: el dispositivo y el
   estado. En un puente, cada dispositivo conectado envía su propio evento.
 
-Para elegir un botón en el filtro «Dispositivo», el accesorio debe haber
-creado un dispositivo en Gladys (por ejemplo a través de su batería). Si no,
-deje el filtro vacío.
+Para elegir un botón en el filtro «Dispositivo», cree primero su
+dispositivo en Gladys (pestaña **Descubrir**). Si no, deje el filtro vacío.
 
 Acciones (en una escena, **Nueva acción → Integraciones**):
 

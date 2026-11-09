@@ -32,6 +32,12 @@ import { hsToRgbInt, rgbIntToHs } from './color.js';
 // Gladys cover state values (open / stop / close commands).
 export const COVER_STATE = { OPEN: 1, STOP: 0, CLOSE: -1 };
 
+// Gladys core enums (server/utils/constants.js), not exported by the SDK.
+// BUTTON_STATUS: 1 = click, 2 = double click, 6 = long click.
+export const BUTTON_STATUS = { CLICK: 1, DOUBLE_CLICK: 2, LONG_CLICK: 6 };
+// AC_MODE of an air conditioning `mode` feature.
+export const AC_MODE = { AUTO: 0, COOLING: 1, HEATING: 2, DRYING: 3, FAN: 4 };
+
 const INTEGER_FORMATS = new Set(['uint8', 'uint16', 'uint32', 'uint64', 'int']);
 
 // --- Characteristic helpers --------------------------------------------------
@@ -84,6 +90,21 @@ export function toHapValue(char, value) {
 }
 
 const bound = (value, fallback) => (Number.isFinite(value) ? value : fallback);
+
+/** Reader of an enum characteristic: the value when known, null otherwise. */
+const enumReader = (known) => (value) => {
+  const number = toNumber(value);
+  return known.includes(number) ? number : null;
+};
+
+/** Refuse a value the characteristic does not list in its `valid-values`. */
+function checkValidValue(char, value) {
+  const valid = char['valid-values'] ?? char.validValues;
+  if (value === null || (Array.isArray(valid) && !valid.includes(value))) {
+    throw new Error(`Value ${value} is not supported by this accessory`);
+  }
+  return value;
+}
 
 // --- Descriptor builders -----------------------------------------------------
 
@@ -269,6 +290,132 @@ function mapThermostat(service, label) {
       decimalSensor(humidity, label('Humidity'), CATEGORIES.HUMIDITY_SENSOR, UNITS.PERCENT, 0, 100),
     );
   }
+  // HAP TargetHeatingCoolingState (0 = off, 1 = heat, 2 = cool, 3 = auto) and
+  // CurrentHeatingCoolingState (0 = off, 1 = heat, 2 = cool) use the values of
+  // the Gladys THERMOSTAT_MODE and THERMOSTAT_OPERATING_STATE enums.
+  const mode = findChar(service, CHAR.TARGET_HEATING_COOLING_STATE);
+  if (mode) {
+    features.push(
+      charFeature(mode, {
+        name: label('Mode'),
+        category: CATEGORIES.THERMOSTAT,
+        type: TYPES.THERMOSTAT.MODE,
+        min: 0,
+        max: 3,
+        writable: true,
+        read: enumReader([0, 1, 2, 3]),
+        write: (value) => checkValidValue(mode, toNumber(value)),
+      }),
+    );
+  }
+  const operating = findChar(service, CHAR.CURRENT_HEATING_COOLING_STATE);
+  if (operating) {
+    features.push(
+      charFeature(operating, {
+        name: label('Operating state'),
+        category: CATEGORIES.THERMOSTAT,
+        type: TYPES.THERMOSTAT.OPERATING_STATE,
+        min: 0,
+        max: 2,
+        read: enumReader([0, 1, 2]),
+      }),
+    );
+  }
+  return features;
+}
+
+// HAP TargetHeaterCoolerState (0 = auto, 1 = heat, 2 = cool) <-> Gladys AC_MODE.
+const HEATER_COOLER_TO_AC_MODE = { 0: AC_MODE.AUTO, 1: AC_MODE.HEATING, 2: AC_MODE.COOLING };
+const AC_MODE_TO_HEATER_COOLER = { [AC_MODE.AUTO]: 0, [AC_MODE.HEATING]: 1, [AC_MODE.COOLING]: 2 };
+
+function mapHeaterCooler(service, label) {
+  const features = [];
+  const active = findChar(service, CHAR.ACTIVE);
+  if (active) {
+    features.push(
+      onOff(
+        active,
+        label('Air conditioning'),
+        CATEGORIES.AIR_CONDITIONING,
+        TYPES.AIR_CONDITIONING.BINARY,
+      ),
+    );
+  }
+  const mode = findChar(service, CHAR.TARGET_HEATER_COOLER_STATE);
+  if (mode) {
+    features.push(
+      charFeature(mode, {
+        name: label('Mode'),
+        category: CATEGORIES.AIR_CONDITIONING,
+        type: TYPES.AIR_CONDITIONING.MODE,
+        min: 0,
+        max: 2,
+        writable: true,
+        read: (value) => HEATER_COOLER_TO_AC_MODE[toNumber(value)] ?? null,
+        write: (value) => {
+          const hap = AC_MODE_TO_HEATER_COOLER[toNumber(value)];
+          if (hap === undefined) {
+            throw new Error(`Air conditioning mode ${value} does not exist in HomeKit`);
+          }
+          return checkValidValue(mode, hap);
+        },
+      }),
+    );
+  }
+  const current = findChar(service, CHAR.CURRENT_TEMPERATURE);
+  if (current) {
+    features.push(
+      decimalSensor(
+        current,
+        label('Temperature'),
+        CATEGORIES.TEMPERATURE_SENSOR,
+        UNITS.CELSIUS,
+        -50,
+        100,
+      ),
+    );
+  }
+  // One target temperature: the heating threshold in heat mode, the cooling
+  // threshold otherwise (cool and auto modes, or no mode known).
+  const cooling = findChar(service, CHAR.COOLING_THRESHOLD_TEMPERATURE);
+  const heating = findChar(service, CHAR.HEATING_THRESHOLD_TEMPERATURE);
+  const primary = cooling ?? heating;
+  if (primary) {
+    const threshold = (get) => {
+      const current = mode ? toNumber(get(mode.iid)) : null;
+      if (current === 1 && heating) return heating;
+      if (current === 2 && cooling) return cooling;
+      return primary;
+    };
+    const chars = [mode, cooling, heating].filter(Boolean);
+    const reads = chars.filter((c) => isReadable(c) || supportsEvents(c));
+    const writable = [cooling, heating].some((c) => c && isWritable(c));
+    const descriptor = {
+      key: String(primary.iid),
+      name: label('Target temperature'),
+      category: CATEGORIES.AIR_CONDITIONING,
+      type: TYPES.AIR_CONDITIONING.TARGET_TEMPERATURE,
+      unit: UNITS.CELSIUS,
+      min: bound(primary.minValue, 10),
+      max: bound(primary.maxValue, 35),
+      step: Number.isFinite(primary.minStep) && primary.minStep > 0 ? primary.minStep : undefined,
+      read_only: !writable,
+      has_feedback: writable && reads.length > 0,
+      reads: reads.map((c) => c.iid),
+      events: chars.filter(supportsEvents).map((c) => c.iid),
+      read: (get) => toNumber(get(threshold(get).iid)),
+    };
+    if (writable) {
+      descriptor.write = (value, get) => {
+        const target = threshold(get);
+        if (!isWritable(target)) {
+          throw new Error('This target temperature is read-only in the current mode');
+        }
+        return { [target.iid]: toHapValue(target, value) };
+      };
+    }
+    features.push(descriptor);
+  }
   return features;
 }
 
@@ -429,6 +576,21 @@ function mapAirQuality(service, label) {
       ),
     );
   }
+  // Gas densities, all in µg/m³ in HomeKit (kept as is, no conversion to ppb).
+  const gases = [
+    [CHAR.VOC_DENSITY, 'VOC', CATEGORIES.VOC_SENSOR],
+    [CHAR.NITROGEN_DIOXIDE_DENSITY, 'NO2', CATEGORIES.NO2_SENSOR],
+    [CHAR.OZONE_DENSITY, 'Ozone', CATEGORIES.O3_SENSOR],
+    [CHAR.SULPHUR_DIOXIDE_DENSITY, 'SO2', CATEGORIES.SO2_SENSOR],
+  ];
+  for (const [type, text, category] of gases) {
+    const char = findChar(service, type);
+    if (char) {
+      features.push(
+        decimalSensor(char, label(text), category, UNITS.MICROGRAM_PER_CUBIC_METER, 0, 1000),
+      );
+    }
+  }
   return features;
 }
 
@@ -484,6 +646,7 @@ const SERVICE_MAPPERS = {
   [SERVICE.AIR_QUALITY_SENSOR]: mapAirQuality,
   [SERVICE.BATTERY]: mapBattery,
   [SERVICE.THERMOSTAT]: mapThermostat,
+  [SERVICE.HEATER_COOLER]: mapHeaterCooler,
   [SERVICE.WINDOW_COVERING]: mapCovering,
   [SERVICE.WINDOW]: mapCovering,
   [SERVICE.DOOR]: mapCovering,
@@ -522,10 +685,31 @@ export function accessoryInfo(accessory) {
 // HAP ProgrammableSwitchEvent values -> press names of the scene trigger.
 export const BUTTON_PRESS = { 0: 'single', 1: 'double', 2: 'long' };
 
+// HAP ProgrammableSwitchEvent values -> Gladys BUTTON_STATUS.
+const BUTTON_PRESS_STATUS = {
+  0: BUTTON_STATUS.CLICK,
+  1: BUTTON_STATUS.DOUBLE_CLICK,
+  2: BUTTON_STATUS.LONG_CLICK,
+};
+
+/**
+ * Gladys value of a button feature for a HAP ProgrammableSwitchEvent value:
+ * the BUTTON_STATUS of the press, 1 (ring) for a doorbell, null when the
+ * value is not a press (reads return null).
+ */
+export function buttonFeatureValue(button, value) {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  const status = BUTTON_PRESS_STATUS[Number(value)] ?? null;
+  return button.doorbell && status !== null ? 1 : status;
+}
+
 /**
  * List the buttons of an accessory (stateless programmable switches and
- * doorbells). A press is an event, not a state: it fires the `button_pressed`
- * scene trigger instead of a Gladys feature.
+ * doorbells). Each press fires the `button_pressed` scene trigger and is
+ * published on the button feature (see buttonFeature): reads of a
+ * ProgrammableSwitchEvent return null, only events count.
  * @returns {Array<{ iid: number, index: number, name: string|null, doorbell: boolean }>}
  */
 export function mapButtons(accessory) {
@@ -551,10 +735,47 @@ export function mapButtons(accessory) {
 }
 
 /**
+ * Gladys feature of a button: read-only, fed by the controller on each press
+ * (no polling, the subscription is the button's).
+ */
+function buttonFeature(button, buttons, info) {
+  let name = button.doorbell ? 'Doorbell' : 'Button';
+  if (buttons.length > 1) {
+    name =
+      button.name && button.name !== info.name
+        ? `${button.name} - ${name}`
+        : `${name} ${button.index}`;
+  }
+  return {
+    key: String(button.iid),
+    name,
+    category: button.doorbell ? CATEGORIES.DOORBELL : CATEGORIES.BUTTON,
+    type: button.doorbell ? TYPES.DOORBELL.RING : TYPES.BUTTON.CLICK,
+    min: 0,
+    max: button.doorbell ? 1 : BUTTON_STATUS.LONG_CLICK,
+    read_only: true,
+    has_feedback: false,
+    reads: [],
+    events: [],
+    read: () => null,
+  };
+}
+
+// Services that carry no Gladys feature by design (not worth a log line).
+const SILENT_SERVICES = new Set([
+  SERVICE.ACCESSORY_INFORMATION,
+  SERVICE.PROTOCOL_INFORMATION,
+  SERVICE.SERVICE_LABEL,
+  SERVICE.STATELESS_PROGRAMMABLE_SWITCH,
+  SERVICE.DOORBELL,
+]);
+
+/**
  * Map ONE accessory (entry of the `/accessories` database) to Gladys feature
- * descriptors. Unsupported services are ignored; an accessory without any
- * supported service returns an empty list (a bridge's own accessory, a
- * camera...). Its buttons are listed apart (see mapButtons).
+ * descriptors. Unsupported services are ignored and listed in `unsupported`
+ * (short HAP types, for the logs); an accessory without any supported service
+ * returns an empty list (a bridge's own accessory, a camera...). Its buttons
+ * are listed apart (see mapButtons) and get a feature each.
  */
 export function mapAccessory(accessory) {
   const info = accessoryInfo(accessory);
@@ -580,5 +801,16 @@ export function mapAccessory(accessory) {
     };
     features.push(...SERVICE_MAPPERS[type](service, label));
   }
-  return { info, features, buttons: mapButtons(accessory) };
+  const buttons = mapButtons(accessory);
+  for (const button of buttons) {
+    features.push(buttonFeature(button, buttons, info));
+  }
+  const unsupported = [
+    ...new Set(
+      (accessory.services ?? [])
+        .map((s) => shortType(s.type))
+        .filter((type) => !SERVICE_MAPPERS[type] && !SILENT_SERVICES.has(type)),
+    ),
+  ];
+  return { info, features, buttons, unsupported };
 }

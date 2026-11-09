@@ -29,7 +29,7 @@ import {
   parseMdnsResults,
   platformIdFromDeviceId,
 } from './hap/discovery.js';
-import { BUTTON_PRESS, mapAccessory } from './mapping/index.js';
+import { BUTTON_PRESS, buttonFeatureValue, mapAccessory } from './mapping/index.js';
 import { accessoriesWidget } from './widgets.js';
 
 const DEVICE_TYPE = 'accessory';
@@ -340,7 +340,14 @@ export class HomeKitController {
           }
         }
       }
-      const { info, features, buttons } = mapAccessory(accessory);
+      const { info, features, buttons, unsupported } = mapAccessory(accessory);
+      if (unsupported.length > 0 && withValues) {
+        // Logged on each connection (not from the stored database): the type
+        // codes tell which HomeKit services a user asks to be supported.
+        this.logger.info(
+          `${info.name ?? `${record?.name} ${aid}`}: HomeKit service(s) not supported: ${unsupported.join(', ')}`,
+        );
+      }
       for (const button of buttons) {
         const key = charKey(aid, button.iid);
         state.buttons.set(key, { aid, button });
@@ -910,6 +917,20 @@ export class HomeKitController {
       button: button.name ?? String(button.index),
       doorbell: button.doorbell,
     });
+    // Same press on the button feature, for the "device state" scene trigger
+    // and the dashboard. publishState, not publishChangedStates: two single
+    // presses in a row are two presses.
+    const feature = device?.features.find((f) => f.key === String(button.iid));
+    const featureValue = buttonFeatureValue(button, value);
+    if (!feature || featureValue === null || !this.gladys.connected) {
+      return;
+    }
+    try {
+      await this.gladys.publishState(feature.externalId, featureValue);
+    } catch (err) {
+      // Typically the device is not created in Gladys yet.
+      this.logger.debug(`Button state ${feature.externalId} not published: ${err.message}`);
+    }
   }
 
   /** An accessory went offline or came back: one event per Gladys device. */
