@@ -39,6 +39,7 @@ A HomeKit **bridge** gives one Gladys device per bridged accessory.
 | ------------------------------- | ---------------------------------------------------------------- |
 | Lightbulb                       | On/off, brightness, color, color temperature                     |
 | Switch, outlet, valve           | On/off                                                           |
+| Energy metering (Eve)           | Power (W), energy (kWh), voltage, current                        |
 | Fan                             | On/off, speed                                                    |
 | Thermostat                      | Temperature, target temperature, humidity, mode, operating state |
 | Heater cooler (air conditioner) | On/off, mode, target temperature, temperature                    |
@@ -64,10 +65,19 @@ features: the **Discover** tab then offers to update it.
 
 Other services (cameras, televisions…) are ignored for now. On each
 connection, the logs list the unsupported services of each accessory
-(`HomeKit service(s) not supported: …`): add this line to a support request.
+(`HomeKit service(s) not supported: …`) and the vendor-specific
+characteristics (`vendor characteristic(s) not supported: …`): add these
+lines to a support request.
+
+Energy metering: HomeKit has no standard power characteristic. The
+integration reads the **Eve** ones (Eve accessories, many Homebridge
+plugins). A plug that only shows its consumption in its own app (Aqara…)
+only gives on/off.
 
 Only what the bridge publishes over **HomeKit** is visible: a device a hub
-only shares over **Matter** does not show up here.
+only shares over **Matter** does not show up here. This is the case of the
+infrared air conditioners of Aqara hubs (M2, M3): add them with the Gladys
+Matter integration.
 
 ## Settings
 
