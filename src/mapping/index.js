@@ -26,7 +26,7 @@ import {
   DEVICE_FEATURE_TYPES as TYPES,
   DEVICE_FEATURE_UNITS as UNITS,
 } from '@gladysassistant/integration-sdk';
-import { CHAR, SERVICE, shortType } from '../hap/uuid.js';
+import { CHAR, EVE_CHAR, SERVICE, isCustomType, shortType } from '../hap/uuid.js';
 import { hsToRgbInt, rgbIntToHs } from './color.js';
 
 // Gladys cover state values (open / stop / close commands).
@@ -594,6 +594,40 @@ function mapAirQuality(service, label) {
   return features;
 }
 
+// Eve energy characteristics, read wherever they appear (Outlet service of an
+// Eve Energy, Switch or custom service of a Homebridge plugin...). Same
+// category / types as the smart plugs of the other Gladys integrations.
+const ENERGY_CHARS = [
+  [EVE_CHAR.POWER, 'Power', TYPES.SWITCH.POWER, UNITS.WATT, 10000],
+  [EVE_CHAR.ENERGY, 'Energy', TYPES.SWITCH.ENERGY, UNITS.KILOWATT_HOUR, 1000000],
+  [EVE_CHAR.VOLTAGE, 'Voltage', TYPES.SWITCH.VOLTAGE, UNITS.VOLT, 1000],
+  [EVE_CHAR.CURRENT, 'Current', TYPES.SWITCH.CURRENT, UNITS.AMPERE, 100],
+];
+const ENERGY_TYPES = new Set(ENERGY_CHARS.map(([type]) => type));
+
+const hasEnergy = (service) =>
+  (service.characteristics ?? []).some((c) => ENERGY_TYPES.has(shortType(c.type)));
+
+function mapEnergy(service, label) {
+  const features = [];
+  for (const [type, text, featureType, unit, max] of ENERGY_CHARS) {
+    const char = findChar(service, type);
+    if (char) {
+      features.push(
+        charFeature(char, {
+          name: label(text),
+          category: CATEGORIES.SWITCH,
+          type: featureType,
+          unit,
+          min: bound(char.minValue, 0),
+          max: bound(char.maxValue, max),
+        }),
+      );
+    }
+  }
+  return features;
+}
+
 const SERVICE_MAPPERS = {
   [SERVICE.LIGHTBULB]: mapLightbulb,
   [SERVICE.SWITCH]: (s, l) => mapOnOffService(s, l, 'Switch'),
@@ -768,6 +802,9 @@ const SILENT_SERVICES = new Set([
   SERVICE.SERVICE_LABEL,
   SERVICE.STATELESS_PROGRAMMABLE_SWITCH,
   SERVICE.DOORBELL,
+  SERVICE.WIFI_TRANSPORT,
+  SERVICE.THREAD_TRANSPORT,
+  SERVICE.ACCESSORY_RUNTIME_INFORMATION,
 ]);
 
 /**
@@ -776,10 +813,14 @@ const SILENT_SERVICES = new Set([
  * (short HAP types, for the logs); an accessory without any supported service
  * returns an empty list (a bridge's own accessory, a camera...). Its buttons
  * are listed apart (see mapButtons) and get a feature each.
+ * Vendor-specific characteristics of the mapped services that no feature
+ * reads are listed in `unknownCharacteristics` (for the logs too): a smart
+ * plug may hide its power reading there.
  */
 export function mapAccessory(accessory) {
   const info = accessoryInfo(accessory);
-  const services = (accessory.services ?? []).filter((s) => SERVICE_MAPPERS[shortType(s.type)]);
+  const isMapped = (s) => Boolean(SERVICE_MAPPERS[shortType(s.type)]) || hasEnergy(s);
+  const services = (accessory.services ?? []).filter(isMapped);
   const countByType = new Map();
   for (const service of services) {
     const type = shortType(service.type);
@@ -799,7 +840,7 @@ export function mapAccessory(accessory) {
       }
       return name && name !== info.name ? `${name} - ${text}` : `${text} ${index}`;
     };
-    features.push(...SERVICE_MAPPERS[type](service, label));
+    features.push(...(SERVICE_MAPPERS[type]?.(service, label) ?? []), ...mapEnergy(service, label));
   }
   const buttons = mapButtons(accessory);
   for (const button of buttons) {
@@ -808,9 +849,23 @@ export function mapAccessory(accessory) {
   const unsupported = [
     ...new Set(
       (accessory.services ?? [])
+        .filter((service) => !isMapped(service))
         .map((s) => shortType(s.type))
-        .filter((type) => !SERVICE_MAPPERS[type] && !SILENT_SERVICES.has(type)),
+        .filter((type) => !SILENT_SERVICES.has(type)),
     ),
   ];
-  return { info, features, buttons, unsupported };
+  const unknownCharacteristics = [];
+  for (const service of services) {
+    for (const char of service.characteristics ?? []) {
+      const type = shortType(char.type);
+      if (isCustomType(type) && !ENERGY_TYPES.has(type)) {
+        const description =
+          typeof char.description === 'string' && char.description.trim()
+            ? ` "${char.description.trim()}"`
+            : '';
+        unknownCharacteristics.push(`${shortType(service.type)}/${type}${description}`);
+      }
+    }
+  }
+  return { info, features, buttons, unsupported, unknownCharacteristics };
 }

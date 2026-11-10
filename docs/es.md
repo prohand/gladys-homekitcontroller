@@ -41,6 +41,7 @@ conectado al puente.
 | ----------------------------- | -------------------------------------------------------------------------- |
 | Bombilla                      | Encendido/apagado, brillo, color, temperatura de color                     |
 | Interruptor, enchufe, válvula | Encendido/apagado                                                          |
+| Medición de energía (Eve)     | Potencia (W), energía (kWh), tensión, corriente                            |
 | Ventilador                    | Encendido/apagado, velocidad                                               |
 | Termostato                    | Temperatura, temperatura objetivo, humedad, modo, estado de funcionamiento |
 | Climatizador (calor / frío)   | Encendido/apagado, modo, temperatura objetivo, temperatura                 |
@@ -68,11 +69,19 @@ actualizarlo.
 
 Los demás servicios (cámaras, televisores…) se ignoran por ahora. En cada
 conexión, los registros listan los servicios no compatibles de cada
-accesorio (`HomeKit service(s) not supported: …`): añada esta línea a una
-solicitud de compatibilidad.
+accesorio (`HomeKit service(s) not supported: …`) y las características
+propias del fabricante (`vendor characteristic(s) not supported: …`):
+añada estas líneas a una solicitud de compatibilidad.
+
+Medición de energía: HomeKit no tiene una característica estándar para la
+potencia. La integración lee las de **Eve** (accesorios Eve, muchos plugins
+de Homebridge). Un enchufe que solo muestra su consumo en su propia app
+(Aqara…) solo da encendido/apagado.
 
 Solo es visible lo que el puente publica en **HomeKit**: un dispositivo que
-un hub solo comparte en **Matter** no aparece aquí.
+un hub solo comparte en **Matter** no aparece aquí. Es el caso de los
+climatizadores infrarrojos de los hubs Aqara (M2, M3): añádalos con la
+integración Matter de Gladys.
 
 ## Ajustes
 

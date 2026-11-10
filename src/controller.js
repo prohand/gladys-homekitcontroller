@@ -340,12 +340,17 @@ export class HomeKitController {
           }
         }
       }
-      const { info, features, buttons, unsupported } = mapAccessory(accessory);
+      const { info, features, buttons, unsupported, unknownCharacteristics } =
+        mapAccessory(accessory);
+      const logName = info.name ?? `${record?.name} ${aid}`;
+      // Logged on each connection (not from the stored database): the type
+      // codes tell which HomeKit services a user asks to be supported.
       if (unsupported.length > 0 && withValues) {
-        // Logged on each connection (not from the stored database): the type
-        // codes tell which HomeKit services a user asks to be supported.
+        this.logger.info(`${logName}: HomeKit service(s) not supported: ${unsupported.join(', ')}`);
+      }
+      if (unknownCharacteristics.length > 0 && withValues) {
         this.logger.info(
-          `${info.name ?? `${record?.name} ${aid}`}: HomeKit service(s) not supported: ${unsupported.join(', ')}`,
+          `${logName}: vendor characteristic(s) not supported (service/characteristic): ${unknownCharacteristics.join(', ')}`,
         );
       }
       for (const button of buttons) {

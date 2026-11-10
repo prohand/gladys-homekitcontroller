@@ -39,6 +39,7 @@ Un **pont** (bridge) HomeKit donne un appareil Gladys par accessoire relié.
 | ---------------------------- | ---------------------------------------------- |
 | Ampoule                      | Marche/arrêt, luminosité, couleur, température |
 | Interrupteur, prise, vanne   | Marche/arrêt                                   |
+| Mesure d'énergie (Eve)       | Puissance (W), énergie (kWh), tension, courant |
 | Ventilateur                  | Marche/arrêt, vitesse                          |
 | Thermostat                   | Température, consigne, humidité, mode, état    |
 | Climatiseur (chaud / froid)  | Marche/arrêt, mode, consigne, température      |
@@ -66,11 +67,19 @@ mettre à jour.
 
 Les autres services (caméras, télévisions…) sont ignorés pour l'instant. Les
 logs listent, à chaque connexion, les services non pris en charge de chaque
-accessoire (`HomeKit service(s) not supported: …`) : joignez cette ligne à
-une demande de prise en charge.
+accessoire (`HomeKit service(s) not supported: …`) et les caractéristiques
+propres au fabricant (`vendor characteristic(s) not supported: …`) :
+joignez ces lignes à une demande de prise en charge.
+
+Mesure d'énergie : HomeKit n'a pas de caractéristique standard pour la
+puissance. L'intégration lit celles d'**Eve** (accessoires Eve, nombreux
+plugins Homebridge). Une prise qui ne publie sa consommation que dans son
+app (Aqara…) n'affiche que la marche/arrêt.
 
 Seul ce que le pont publie en **HomeKit** est visible : un appareil qu'un
-hub ne partage qu'en **Matter** n'apparaît pas ici.
+hub ne partage qu'en **Matter** n'apparaît pas ici. C'est le cas des
+climatiseurs infrarouges des hubs Aqara (M2, M3) : ajoutez-les avec
+l'intégration Matter de Gladys.
 
 ## Réglages
 

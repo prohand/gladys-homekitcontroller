@@ -11,6 +11,20 @@ la section de la nouvelle version et les publie dans la Release GitHub.
 
 ## [Unreleased]
 
+### Ajouté
+
+- Mesure d'énergie : puissance (W), énergie (kWh), tension et courant lus
+  dans les caractéristiques **Eve** (accessoires Eve, plugins Homebridge).
+- Les logs listent aussi les caractéristiques propres au fabricant des
+  services pris en charge (`vendor characteristic(s) not supported: …`),
+  pour repérer une mesure cachée (ex. puissance d'une prise).
+
+### Modifié
+
+- Les services techniques d'un hub (transport Wi-Fi / Thread, informations
+  d'exécution : `22A`, `701`, `239`) ne sont plus signalés comme non pris en
+  charge.
+
 ## [1.3.0] - 2026-11-09
 
 ### Ajouté

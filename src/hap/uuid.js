@@ -31,6 +31,7 @@ export function shortType(type) {
 // Services (HAP spec, chapter 8), only the ones we read.
 export const SERVICE = {
   ACCESSORY_INFORMATION: '3E',
+  ACCESSORY_RUNTIME_INFORMATION: '239',
   AIR_QUALITY_SENSOR: '8D',
   BATTERY: '96',
   CARBON_DIOXIDE_SENSOR: '97',
@@ -56,7 +57,9 @@ export const SERVICE = {
   SWITCH: '49',
   TEMPERATURE_SENSOR: '8A',
   THERMOSTAT: '4A',
+  THREAD_TRANSPORT: '701',
   VALVE: 'D0',
+  WIFI_TRANSPORT: '22A',
   WINDOW: '8B',
   WINDOW_COVERING: '8C',
 };
@@ -109,6 +112,18 @@ export const CHAR = {
   VOC_DENSITY: 'C8',
   CONFIGURED_NAME: 'E3',
 };
+
+// Eve (Elgato) energy characteristics: not in the HAP spec, but a de facto
+// standard used by Eve accessories and many Homebridge plugins.
+export const EVE_CHAR = {
+  POWER: 'E863F10D-079E-48FF-8F27-9C2605A29F52', // W, float
+  ENERGY: 'E863F10C-079E-48FF-8F27-9C2605A29F52', // kWh, float
+  VOLTAGE: 'E863F10A-079E-48FF-8F27-9C2605A29F52', // V, float
+  CURRENT: 'E863F126-079E-48FF-8F27-9C2605A29F52', // A, float
+};
+
+/** True for a vendor-specific (non-Apple) service or characteristic type. */
+export const isCustomType = (type) => shortType(type).length === 36;
 
 // HomeKit accessory categories (mDNS TXT `ci`), for human-readable listings.
 export const ACCESSORY_CATEGORY = {

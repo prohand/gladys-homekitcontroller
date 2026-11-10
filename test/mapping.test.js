@@ -248,6 +248,89 @@ test('unsupported services are listed, technical ones are not', () => {
   ]);
 });
 
+test('transport and runtime services of a hub are not listed as unsupported', () => {
+  const hub = {
+    aid: 1,
+    services: [
+      { iid: 1, type: '3E', characteristics: [] },
+      { iid: 2, type: '22A', characteristics: [] },
+      { iid: 3, type: '239', characteristics: [] },
+      { iid: 4, type: '701', characteristics: [] },
+      { iid: 5, type: '7E', characteristics: [] },
+    ],
+  };
+  assert.deepEqual(mapAccessory(hub).unsupported, ['7E']);
+});
+
+const EVE = (short) => `E863F${short}-079E-48FF-8F27-9C2605A29F52`;
+
+test('an outlet with Eve energy characteristics maps power, energy, voltage and current', () => {
+  const plug = {
+    aid: 2,
+    services: [
+      { iid: 1, type: '3E', characteristics: [] },
+      {
+        iid: 8,
+        type: '47',
+        characteristics: [
+          { iid: 9, type: '25', perms: ['pr', 'pw', 'ev'], format: 'bool', value: true },
+          { iid: 10, type: EVE('10D'), perms: ['pr', 'ev'], format: 'float', value: 42.5 },
+          { iid: 11, type: EVE('10C'), perms: ['pr', 'ev'], format: 'float', value: 12.3 },
+          { iid: 12, type: EVE('10A'), perms: ['pr'], format: 'float', value: 231 },
+          { iid: 13, type: EVE('126'), perms: ['pr'], format: 'float', value: 0.2 },
+          {
+            iid: 14,
+            type: '9715BF53-AB63-4449-8DC7-2785D617390A',
+            perms: ['pr'],
+            format: 'uint8',
+            description: 'Vendor data',
+          },
+        ],
+      },
+    ],
+  };
+  const { features, unsupported, unknownCharacteristics } = mapAccessory(plug);
+  assert.deepEqual(
+    features.map((f) => [f.key, f.category, f.type, f.unit ?? null]),
+    [
+      ['9', 'switch', 'binary', null],
+      ['10', 'switch', 'power', 'watt'],
+      ['11', 'switch', 'energy', 'kilowatt-hour'],
+      ['12', 'switch', 'voltage', 'volt'],
+      ['13', 'switch', 'current', 'ampere'],
+    ],
+  );
+  const get = getterFor(plug);
+  assert.equal(byKey(features, '10').read(get), 42.5);
+  assert.equal(byKey(features, '11').read(get), 12.3);
+  assert.equal(byKey(features, '10').read_only, true);
+  assert.deepEqual(byKey(features, '10').events, [10]);
+  assert.deepEqual(byKey(features, '12').events, []);
+  assert.deepEqual(unsupported, []);
+  assert.deepEqual(unknownCharacteristics, [
+    '47/9715BF53-AB63-4449-8DC7-2785D617390A "Vendor data"',
+  ]);
+});
+
+test('a custom service carrying Eve energy characteristics is supported', () => {
+  const meter = {
+    aid: 3,
+    services: [
+      {
+        iid: 20,
+        type: 'E863F007-079E-48FF-8F27-9C2605A29F52',
+        characteristics: [{ iid: 21, type: EVE('10D'), perms: ['pr'], format: 'float' }],
+      },
+    ],
+  };
+  const { features, unsupported } = mapAccessory(meter);
+  assert.deepEqual(
+    features.map((f) => [f.key, f.type]),
+    [['21', 'power']],
+  );
+  assert.deepEqual(unsupported, []);
+});
+
 test('a heater cooler maps to an air conditioning device', () => {
   const ac = {
     aid: 6,

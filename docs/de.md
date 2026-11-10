@@ -40,6 +40,7 @@ Eine HomeKit-**Bridge** ergibt ein Gladys-Gerät pro angebundenem Zubehör.
 | ---------------------------- | -------------------------------------------------------------------- |
 | Lampe                        | Ein/Aus, Helligkeit, Farbe, Farbtemperatur                           |
 | Schalter, Steckdose, Ventil  | Ein/Aus                                                              |
+| Energiemessung (Eve)         | Leistung (W), Energie (kWh), Spannung, Strom                         |
 | Ventilator                   | Ein/Aus, Geschwindigkeit                                             |
 | Thermostat                   | Temperatur, Solltemperatur, Luftfeuchtigkeit, Modus, Betriebszustand |
 | Klimagerät (Heizen / Kühlen) | Ein/Aus, Modus, Solltemperatur, Temperatur                           |
@@ -68,11 +69,19 @@ aktualisieren.
 
 Andere Dienste (Kameras, Fernseher…) werden vorerst ignoriert. Bei jeder
 Verbindung listen die Protokolle die nicht unterstützten Dienste jedes
-Zubehörs auf (`HomeKit service(s) not supported: …`): Füge diese Zeile einer
-Anfrage zur Unterstützung bei.
+Zubehörs (`HomeKit service(s) not supported: …`) und die herstellereigenen
+Merkmale (`vendor characteristic(s) not supported: …`) auf: Füge diese
+Zeilen einer Anfrage zur Unterstützung bei.
+
+Energiemessung: HomeKit hat kein Standardmerkmal für die Leistung. Die
+Integration liest die Merkmale von **Eve** (Eve-Zubehör, viele
+Homebridge-Plugins). Eine Steckdose, die ihren Verbrauch nur in ihrer
+eigenen App zeigt (Aqara…), liefert nur Ein/Aus.
 
 Sichtbar ist nur, was die Bridge über **HomeKit** veröffentlicht: Ein Gerät,
-das ein Hub nur über **Matter** teilt, erscheint hier nicht.
+das ein Hub nur über **Matter** teilt, erscheint hier nicht. Das gilt für
+die Infrarot-Klimageräte der Aqara-Hubs (M2, M3): Füge sie mit der
+Matter-Integration von Gladys hinzu.
 
 ## Einstellungen
 
